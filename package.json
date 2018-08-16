@@ -15,5 +15,11 @@
     "library"
   ],
   "author": "Samuel Taylor <rattletone@protonmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
 }
