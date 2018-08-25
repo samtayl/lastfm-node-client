@@ -1,10 +1,18 @@
 const assert = require("assert");
+const crypto = require("crypto");
 const createRequest = require("../lib/request");
 
 assert.strict;
 
-describe("request", function() {
-	it("assign self method, api_key, and sk properties from package and method, apiKey, and sessionKey arguments", function() {
+describe("createRequest()", function() {
+	it("return request object", function() {
+		const request = createRequest("<method>", "<package>", "<apiKey>");
+
+		assert(request);
+		assert(typeof request, "object");
+	});
+
+	it("assign request object method, api_key, and sk properties from package and method, apiKey, and sessionKey arguments", function() {
 		const method = "<method>";
 		const package = "<package>";
 		const apiKey = "<apiKey>";
@@ -16,14 +24,14 @@ describe("request", function() {
 		assert(request.sk, sessionKey);
 	});
 
-	it("assign self properties of param argument", function() {
+	it("assign request object properties of param argument", function() {
 		const name = "<name>";
 		const value = "<value>";
 		const params = {};
 
 		params[name] = value;
 
-		const request = createRequest("<method>", "<package>", "<apiKey>", params, "<sessionKey>");
+		const request = createRequest("<method>", "<package>", "<apiKey>", params);
 
 		assert(request[name], value);
 	});
@@ -54,25 +62,25 @@ describe("request", function() {
 	});
 
 	it("set the format property to json", function() {
-		const request = createRequest();
+		const request = createRequest("<method>", "<package>", "<apiKey>");
 
 		assert(request.format, "json");
 	});
 
-	it("overwrite format param with json", function() {
+	it("overwrite format param to json", function() {
 		const formatParam = "<format param>";
 
 		const params = {
 			format: formatParam
 		};
 
-		const request = createRequest("<method>", "<package>", "<apiKey>", params, "<sessionKey>");
+		const request = createRequest("<method>", "<package>", "<apiKey>", params);
 
 		assert(request.format, "json");
 	});
 
 	it("don't set the sk property if a sessionKey paramater is not passed", function() {
-		const request = createRequest("<method>", "<package>", "<apiKey>", {});
+		const request = createRequest("<method>", "<package>", "<apiKey>");
 
 		assert.strictEqual(request.hasOwnProperty("sk"), false);
 	});	
@@ -85,5 +93,26 @@ describe("request", function() {
 		const request = createRequest("<method>", "<package>", "<apiKey>", params, "<sessionKey>");
 
 		assert.strictEqual(request.hasOwnProperty("callback"), false);
+	});
+});
+
+describe("request.sign()", function() {
+	it("assign self api_sig property with value of an md5 hash of all property names and values (excluding format and callback properties) ordered alphabetically and appended with a shared secret", function() {
+		const request = createRequest("<method>", "<package>", "<apiKey>");
+		const secret = "<secret>";
+		const params = Object.entries(request).sort(([nameA], [nameB]) => nameA.localeCompare(nameB));
+		let paramString = "";
+
+		for(const [name, value] of params) {
+			if(name !== "format" && name !== "callback") {
+				paramString += name + value;
+			}
+		}
+		
+		const hash = crypto.createHash("md5").update(paramString + secret).digest("hex");
+
+		request.sign(secret);
+
+		assert(request.api_sig, hash);
 	});
 });
