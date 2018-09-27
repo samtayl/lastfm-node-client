@@ -17,9 +17,9 @@
   "author": "Samuel Taylor <rattletone@protonmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "mocha"
+    "test": "jest"
   },
   "devDependencies": {
-    "mocha": "^5.2.0"
+    "jest": "^23.6.0"
   }
 }
