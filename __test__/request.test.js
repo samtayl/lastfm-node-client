@@ -1,4 +1,6 @@
+const { URL, URLSearchParams } = require("url");
 const crypto = require("crypto");
+const sinon = require("sinon");
 const createRequest = require("../lib/request");
 
 describe("createRequest()", () => {
@@ -9,8 +11,8 @@ describe("createRequest()", () => {
 	});
 
 	test("assign request object method, api_key, and sk properties from apiPackage and apiMethod, apiKey, and sessionKey arguments", () => {
-		const apiMethod = "<apiMethod>";
 		const apiPackage = "<apiPackage>";
+		const apiMethod = "<apiMethod>";
 		const apiKey = "<apiKey>";
 		const sessionKey = "<sessionKey>";
 		const request = createRequest(apiPackage, apiMethod, apiKey, {}, sessionKey);
@@ -74,7 +76,7 @@ describe("createRequest()", () => {
 	test("don't set the sk property if a sessionKey paramater is not passed", () => {
 		const request = createRequest("<apiPackage>", "<apiMethod>", "<apiKey>");
 
-		expect(request["sk"]).toBeUndefined();
+		expect(request.hasOwnProperty("sk")).toBe(false);
 	});
 
 	test("delete the callback property if passed in the params paramater", () => {
@@ -106,5 +108,78 @@ describe("request.sign()", () => {
 		request.sign(secret);
 
 		expect(request.api_sig).toBe(hash);
+	});
+});
+
+describe("request.send", () => {
+	const apiPackage = "<apiPackage>";
+	const apiMethod = "<apiMethod>";
+	const apiKey = "<apiKey>";
+	const requestPrototype = Object.getPrototypeOf(createRequest());
+
+	afterEach(() => {
+		if(typeof requestPrototype["_actuallySend"].restore === "function") {
+			requestPrototype["_actuallySend"].restore();
+		}
+	});
+
+	test("when method is POST, set options.method as POST and add own properties to body params", () => {
+		const request = createRequest(apiPackage, apiMethod, apiKey);
+
+		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
+			expect(options.method).toBe("POST");
+
+			const searchParams = new URLSearchParams(body);
+
+			expect(searchParams.get("method")).toBe(request.method);
+			expect(searchParams.get("api_key")).toBe(request.api_key);
+			expect(searchParams.get("format")).toBe(request.format);
+		});
+
+		request.send("POST");
+	});
+	
+	test("when method is not POST, add own properties to url search params", () => {
+		const request = createRequest(apiPackage, apiMethod, apiKey);
+
+		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
+			expect(options.method).toBeUndefined();
+
+			const url = new URL(`http://${options.hostname + options.path}`);
+			const searchParams = url.searchParams;
+			
+			expect(searchParams.get("method")).toBe(request.method);
+			expect(searchParams.get("api_key")).toBe(request.api_key);
+			expect(searchParams.get("format")).toBe(request.format);
+		});
+		
+		request.send();
+	});
+
+	test("when callback is passed, return undefined", () => {
+		const request = createRequest(apiPackage, apiMethod, apiKey);
+
+		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
+			expect(callback).toBeTruthy();
+		});
+
+		const response = request.send(() => {});
+		
+		expect(response).toBeUndefined();
+	});
+
+	test("when callback is not passed, return _actuallySend return value", () => {
+		const testReturn = "<test return>";
+		const request = createRequest(apiPackage, apiMethod, apiKey);
+
+		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
+			expect(callback).toBeNull();
+
+			return testReturn;
+		});
+		
+		const response = request.send();
+		
+		expect(response).toBe(testReturn);
 	});
 });
