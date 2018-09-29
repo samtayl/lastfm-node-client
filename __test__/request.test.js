@@ -32,7 +32,7 @@ describe("createRequest()", () => {
 		expect(request[name]).toBe(value);
 	});
 
-	test("overwrite apiMethod, api_key, and sk params with apiPackage and apiMethod, apiKey, and sessionKey arguments", () => {
+	test("overwrite method, api_key, and sk params with apiPackage and apiMethod, apiKey, and sessionKey arguments", () => {
 		const apiPackageArg = "<apiPackage arg>";
 		const apiMethodArg = "<apiMethod arg>";
 		const apiKeyArg = "<apiKey arg>";
@@ -42,7 +42,7 @@ describe("createRequest()", () => {
 		const apiKeyParam = "<apiKey param>";
 		const sessionKeyParam = "<sessionKey param>";
 		const params = {
-			apiMethod: apiPackageParam + "." + apiMethodParam,
+			method: apiPackageParam + "." + apiMethodParam,
 			api_key: apiKeyParam,
 			sk: sessionKeyParam
 		};
