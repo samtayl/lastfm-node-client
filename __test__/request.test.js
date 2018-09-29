@@ -8,7 +8,7 @@ describe("createRequest()", () => {
 		expect(typeof request).toBe("object");
 	});
 
-	test("assign request object apiMethod, api_key, and sk properties from apiPackage and apiMethod, apiKey, and sessionKey arguments", () => {
+	test("assign request object method, api_key, and sk properties from apiPackage and apiMethod, apiKey, and sessionKey arguments", () => {
 		const apiMethod = "<apiMethod>";
 		const apiPackage = "<apiPackage>";
 		const apiKey = "<apiKey>";
