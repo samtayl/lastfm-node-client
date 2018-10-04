@@ -221,9 +221,7 @@ describe("request.send", () => {
 	test("when callback is not passed, return promise", () => {
 		const request = createRequest(apiPackage, apiMethod, apiKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(callback).toBeNull();
-		});
+		sinon.stub(requestPrototype, "_actuallySend");
 		
 		const response = request.send();
 		
