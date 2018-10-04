@@ -1,5 +1,6 @@
 const { URL, URLSearchParams } = require("url");
 const crypto = require("crypto");
+const nock = require("nock");
 const sinon = require("sinon");
 const createRequest = require("../lib/request");
 
@@ -22,7 +23,7 @@ describe("createRequest()", () => {
 		expect(request.sk).toBe(sessionKey);
 	});
 
-	test("assign request object properties of param argument", () => {
+	test("assign request object properties of params argument", () => {
 		const name = "<name>";
 		const value = "<value>";
 		const params = {};
@@ -111,6 +112,55 @@ describe("request.sign()", () => {
 	});
 });
 
+describe("request._actuallySend()", () => {
+	const apiPackage = "<apiPackage>";
+	const apiMethod = "<apiMethod>";
+	const apiKey = "<apiKey>";
+
+	test("make a GET request", done => {
+		const request = createRequest(apiPackage, apiMethod, apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query(true)
+			.reply(200, {});
+
+		request.send((err, data) => {
+			expect(err).toBeNull();
+			expect(data).not.toBeNull();
+			done();
+		});
+	});
+
+	test("make a POST request", done => {
+		const request = createRequest(apiPackage, apiMethod, apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/")
+			.reply(200, {});
+
+		request.send("POST", (err, data) => {
+			expect(err).toBeNull();
+			expect(data).not.toBeNull();
+			done();
+		});
+	});
+
+	test("handle an error", done => {
+		const request = createRequest(apiPackage, apiMethod, apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.reply(500);
+
+		request.send((err, data) => {
+			expect(err).toBeInstanceOf(Error);
+			expect(data).toBeNull();
+			done();
+		});
+	});
+});
+
 describe("request.send", () => {
 	const apiPackage = "<apiPackage>";
 	const apiMethod = "<apiMethod>";
@@ -139,11 +189,11 @@ describe("request.send", () => {
 		request.send("POST");
 	});
 	
-	test("when method is not POST, add own properties to url search params", () => {
+	test("when method is not POST, add own properties to query params", () => {
 		const request = createRequest(apiPackage, apiMethod, apiKey);
 
 		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBeUndefined();
+			expect(options.method).not.toBe("POST");
 
 			const url = new URL(`http://${options.hostname + options.path}`);
 			const searchParams = url.searchParams;
@@ -160,7 +210,7 @@ describe("request.send", () => {
 		const request = createRequest(apiPackage, apiMethod, apiKey);
 
 		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(callback).toBeTruthy();
+			expect(callback).toBeDefined();
 		});
 
 		const response = request.send(() => {});
@@ -168,18 +218,15 @@ describe("request.send", () => {
 		expect(response).toBeUndefined();
 	});
 
-	test("when callback is not passed, return _actuallySend return value", () => {
-		const testReturn = "<test return>";
+	test("when callback is not passed, return promise", () => {
 		const request = createRequest(apiPackage, apiMethod, apiKey);
 
 		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
 			expect(callback).toBeNull();
-
-			return testReturn;
 		});
 		
 		const response = request.send();
 		
-		expect(response).toBe(testReturn);
+		expect(response).toBeInstanceOf(Promise);
 	});
 });
