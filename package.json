@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "jest": "^23.6.0",
+    "nock": "^10.0.0",
     "sinon": "^6.3.4"
   }
 }
