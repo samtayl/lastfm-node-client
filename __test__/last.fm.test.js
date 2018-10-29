@@ -1,21 +1,13 @@
-const sinon = require("sinon");
+const nock = require("nock");
 const LastFm = require("../lib/last.fm.js");
-const createRequest = require("../lib/request");
 
 describe("LastFm", () => {
 	const apiKey = "<apiKey>";
 	const secret = "<secret>";
 	const sessionKey = "<sessionKey>";
-	const requestPrototype = Object.getPrototypeOf(createRequest());
-
-	afterEach(() => {
-		if(typeof requestPrototype["_actuallySend"].restore === "function") {
-			requestPrototype["_actuallySend"].restore();
-		}
-	});
 
 	describe("constructor()", () => {
-		it("set apiKey, secret, and sessionKey properties", () => {
+		test("set apiKey, secret, and sessionKey properties", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
 			expect(lastFm.apiKey).toBe(apiKey);
@@ -23,7 +15,7 @@ describe("LastFm", () => {
 			expect(lastFm.sessionKey).toBe(sessionKey);
 		});
 	
-		it("throw TypeError if apikey argument is not of type string", () => {
+		test("throw TypeError if apikey argument is not of type string", () => {
 			function throwTypeError() {
 				new LastFm();
 			}
@@ -31,7 +23,7 @@ describe("LastFm", () => {
 			expect(throwTypeError).toThrow(TypeError);
 		});
 	
-		it("throw TypeError if secret argument is passed and not of type string", () => {
+		test("throw TypeError if secret argument is passed and not of type string", () => {
 			function throwTypeError() {
 				new LastFm(apiKey, null);
 			}
@@ -39,7 +31,7 @@ describe("LastFm", () => {
 			expect(throwTypeError).toThrow(TypeError);
 		});
 	
-		it("throw TypeError if sessionKey argument is passed and not of type string", () => {
+		test("throw TypeError if sessionKey argument is passed and not of type string", () => {
 			function throwTypeError() {
 				new LastFm(apiKey, secret, null);
 			}
@@ -48,1001 +40,862 @@ describe("LastFm", () => {
 		});
 	});
 
-	it("add tags to an album", done => {
+	test("add tags to an album", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "album.addTags", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
 
-			const searchParams = new URLSearchParams(body);
-			
-			expect(searchParams.get("method")).toBe("album.addTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+		lastFm.albumAddTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-
-		lastFm.albumAddTags();
 	});
 
-	it("get info from an album", done => {
+	test("get info of an album", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "album.getInfo", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("album.getInfo");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.albumGetInfo({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-
-		lastFm.albumGetInfo();
 	});
 
-	it("get tags from an album", done => {
+	test("get tags of an album", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "album.getTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("album.getTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.albumGetTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-
-		lastFm.albumGetTags();
 	});
 
-	it("get top tags from an album", done => {
+	test("get top tags of an album", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "album.getTopTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("album.getTopTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.albumGetTopTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-
-		lastFm.albumGetTopTags();
 	});
 
-	it("remove tag from an album", done => {
+	test("remove a tag from an album", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "album.removeTag", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok"})
 
-			const searchParams = new URLSearchParams(body);
-			
-			expect(searchParams.get("method")).toBe("album.removeTag");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+		lastFm.albumRemoveTag({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-
-		lastFm.albumRemoveTag();
 	});
 
-	it("search for an album", done => {
+	test("search for an album", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "album.search", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
 
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("album.search");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.albumSearch({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-
-		lastFm.albumSearch();
 	});
 
-	it("should add tags to an artist", done => {
+	test("add tags to an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "artist.addTags", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
 
-			const searchParams = new URLSearchParams(body);
-
-			expect(searchParams.get("method")).toBe("artist.addTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+		lastFm.artistAddTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-
-		lastFm.artistAddTags();
 	});
 
-	it("get artist correction", done => {
+	test("get corrections of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.getCorrection", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.getCorrection");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.artistGetCorrection({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistGetCorrection();
 	});
 
-	it("get artist info", done => {
+	test("get info of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.getInfo");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.getInfo", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
+
+		lastFm.artistGetInfo({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistGetInfo();
 	});
 
-	it("get similar artists", done => {
+	test("get similar artists to an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.getSimilar");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.getSimilar", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
+
+		lastFm.artistGetSimilar({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistGetSimilar();
 	});
 
-	it("get artist tags", done => {
+	test("get tags of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.getTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.getTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
+
+		lastFm.artistGetTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistGetTags();
 	});
 
-	it("get an artist's top albums", done => {
+	test("get top albums of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.getTopAlbums");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.getTopAlbums", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
+
+		lastFm.artistGetTopAlbums({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistGetTopAlbums();
 	});
 
-	it("get an artist's top tags", done => {
+	test("get top tags of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.getTopTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.getTopTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.artistGetTopTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistGetTopTags();
 	});
 
-	it("get an artist's top tracks", done => {
+	test("get top tracks of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.getTopTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.getTopTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.artistGetTopTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistGetTopTracks();
 	});
 
-	it("remove a tag from an artist", done => {
+	test("remove a tag from an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("artist.removeTag");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "artist.removeTag", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok"})
+
+		lastFm.artistRemoveTag({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistRemoveTag();
 	});
 
-	it("search for an artist", done => {
+	test("search for an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "artist.search", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("artist.search");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.artistSearch({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.artistSearch();
 	});
 
-	it("get a mobile session", done => {
+	test("get a mobile session", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("auth.getMobileSession");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "auth.getMobileSession", api_key: apiKey, format: "json", api_sig:  /.+/ })
+			.reply(200, { status: "ok"})
+
+		lastFm.authGetMobileSession({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.authGetMobileSession();
 	});
 
-	it("get session", done => {
+	test("get a session key", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "auth.getSession", api_key: apiKey, format: "json", api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("auth.getSession");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+		lastFm.authGetSession({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.authGetSession();
 	});
 
-	it("get token", done => {
+	test("get a token", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "auth.getToken", api_key: apiKey, format: "json", api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("auth.getToken");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+		lastFm.authGetToken((err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.authGetToken();
 	});
 
-	it("get the top artists chart", done => {
+	test("get the top artists chart", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "chart.getTopArtists", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("chart.getTopArtists");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.chartGetTopArtists({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.chartGetTopArtists();
 	});
 
-	it("get the top tags chart", done => {
+	test("get the top tags chart", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "chart.getTopTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("chart.getTopTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.chartGetTopTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.chartGetTopTags();
 	});
 
-	it("get the top tracks chart", done => {
+	test("get the top tracks chart", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "chart.getTopTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("chart.getTopTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.chartGetTopTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.chartGetTopTracks();
 	});
 
-	it("get most popular artists by country", done => {
+	test("get top artists of a country", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "geo.getTopArtists", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("geo.getTopArtists");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.geoGetTopArtists({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.geoGetTopArtists();
 	});
 
-	it("get most popular tracks by country", done => {
+	test("get top tracks of a country", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "geo.getTopTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("geo.getTopTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.geoGetTopTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.geoGetTopTracks();
 	});
 
-	it("get artists in a users library", done => {
+	test("get artists in the library of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "library.getArtists", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("library.getArtists");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.libraryGetArtists({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.libraryGetArtists();
 	});
 
-	it("get tag info", done => {
+	test("get info of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "tag.getInfo", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("tag.getInfo");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.tagGetInfo({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.tagGetInfo();
 	});
 
-	it("get similar tags", done => {
+	test("get similar tags to a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "tag.getSimilar", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("tag.getSimilar");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.tagGetSimilar({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.tagGetSimilar();
 	});
 
-	it("get a tag's top albums", done => {
+	test("get top albums of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "tag.getTopAlbums", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("tag.getTopAlbums");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.tagGetTopAlbums({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.tagGetTopAlbums();
 	});
 
-	it("get a tag's top artists", done => {
+	test("get top artists of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "tag.getTopArtists", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("tag.getTopArtists");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.tagGetTopArtists({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.tagGetTopArtists();
 	});
 
-	it("get top tags", done => {
+	test("get top tags", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "tag.getTopTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("tag.getTopTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.tagGetTopTags((err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.tagGetTopTags();
 	});
 
-	it("get a tag's top tracks", done => {
+	test("get top tracks of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "tag.getTopTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("tag.getTopTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.tagGetTopTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.tagGetTopTracks();
 	});
 
-	it("Get a tag's weekly chart", done => {
+	test("get weekly charts of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "tag.getWeeklyChartList", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("tag.getWeeklyChartList");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.tagGetWeeklyChartList({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.tagGetWeeklyChartList();
 	});
 
-	it("add tags to a track", done => {
+	test("add tags to a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("track.addTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "track.addTags", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackAddTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackAddTags();
 	});
 
-	it("get track correction", done => {
+	test("get corrections of a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "track.getCorrection", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("track.getCorrection");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.trackGetCorrection({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackGetCorrection();
 	});
 
-	it("get track info", done => {
+	test("get info of a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("track.getInfo");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "track.getInfo", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackGetInfo({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackGetInfo();
 	});
 
-	it("get similar tracks", done => {
+	test("get similar tracks to a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("track.getSimilar");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "track.getSimilar", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackGetSimilar({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackGetSimilar();
 	});
 
-	it("get tags from a track", done => {
+	test("get tags of a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("track.getTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "track.getTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackGetTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackGetTags();
 	});
 
-	it("get top tags for a track", done => {
+	test("get top tags of a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "track.getTopTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" });
 	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("track.getTopTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+		lastFm.trackGetTopTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackGetTopTags();
 	});
 
-	it("love a track", done => {
+	test("love a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("track.love");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "track.love", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackLove({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackLove();
 	});
 	
-	it("remove a tag from a track", done => {
+	test("remove a tag from a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("track.removeTag");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "track.removeTag", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok"})
+
+		lastFm.trackRemoveTag({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackRemoveTag();
 	});
 
-	it("scrobble a track", done => {
+	test("scrobble a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("track.scrobble");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "track.scrobble", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackScrobble({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackScrobble();
 	});
 	
-	it("search for a track", done => {
+	test("search for a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("track.search");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "track.search", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.trackSearch({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackSearch();
 	});
 
-	it("unlove a track", done => {
+	test("unlove a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("track.unlove");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "track.unlove", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackUnlove({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackUnlove();
 	});
 
-	it("update now playing", done => {
+	test("update now playing", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).toBe("POST");
-	
-			const searchParams = new URLSearchParams(body);
-	
-			expect(searchParams.get("method")).toBe("track.updateNowPlaying");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
-			expect(searchParams.get("sk")).toBe(lastFm.sessionKey);
-			expect(searchParams.has("api_sig")).toBe(true);
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", { method: "track.updateNowPlaying", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
+			.reply(200, { status: "ok" });
+
+		lastFm.trackUpdateNowPlaying({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.trackUpdateNowPlaying();
 	});
 
-	it("Get tracks by an artist scrobbled by a user", done => {
+	test("get tracks by an artist scrobbled by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getArtistTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getArtistTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetArtistTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetArtistTracks();
 	});
 
-	it("get a user's friends", done => {
+	test("get friends of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getFriends");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getFriends", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetFriends({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetFriends();
 	});
 
-	it("get user info", done => {
+	test("get info of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getInfo");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getInfo", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetInfo({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetInfo();
 	});
 
-	it("get loved tracks", done => {
+	test("get tracks loved by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getLovedTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getLovedTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetLovedTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetLovedTracks();
 	});
 
-	it("get tags added by a user", done => {
+	test("get tags added by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getPersonalTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getPersonalTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetPersonalTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetPersonalTags();
 	});
 
-	it("get recent tracks by a user", done => {
+	test("get recent tracks of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getRecentTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getRecentTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetRecentTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetRecentTracks();
 	});
 
-	it("get top albums listened to by a user", done => {
+	test("get top albums listened to by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getTopAlbums");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getTopAlbums", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetTopAlbums({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetTopAlbums();
 	});
 
-	it("get top artists listented to by a user", done => {
+	test("get top artists listented to by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getTopArtists");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getTopArtists", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetTopArtists({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetTopArtists();
 	});
 
-	it("get top tags used by a user", done => {
+	test("get top tags used by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getTopTags");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getTopTags", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetTopTags({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetTopTags();
 	});
 
-	it("get top tracks listened to by a user", done => {
+	test("get top tracks listened to by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getTopTracks");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getTopTracks", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetTopTracks({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetTopTracks();
 	});
 
-	it("get album chart for a user", done => {
+	test("get weekly album chart of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getWeeklyAlbumChart");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getWeeklyAlbumChart", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetWeeklyAlbumChart({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetWeeklyAlbumChart();
 	});
 
-	it("get artist chart for a user", done => {
+	test("get weekly artist chart of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getWeeklyArtistChart");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getWeeklyArtistChart", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetWeeklyArtistChart({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetWeeklyArtistChart();
 	});
 
-	it("get charts for a user", done => {
+	test("get weekly charts of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getWeeklyChartList");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getWeeklyChartList", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetWeeklyChartList({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetWeeklyChartList();
 	});
 
-	it("get track chart for a user", done => {
+	test("get weekly track chart of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
-		sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-			expect(options.method).not.toBe("POST");
-	
-			const url = new URL(`http://${options.hostname + options.path}`);
-			const searchParams = url.searchParams;
-			
-			expect(searchParams.get("method")).toBe("user.getWeeklyTrackChart");
-			expect(searchParams.get("api_key")).toBe(lastFm.apiKey);
+
+		nock("http://ws.audioscrobbler.com")
+			.get("/2.0/")
+			.query({ method: "user.getWeeklyTrackChart", api_key: apiKey, format: "json" })
+			.reply(200, { status: "ok" })
+
+		lastFm.userGetWeeklyTrackChart({}, (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ status: "ok" });
 			done();
 		});
-	
-		lastFm.userGetWeeklyTrackChart();
 	});
 });

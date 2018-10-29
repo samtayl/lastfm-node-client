@@ -121,12 +121,11 @@ describe("request", () => {
 		test("make a GET request", done => {
 			const request = createRequest(apiPackage, apiMethod, apiKey);
 
-			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
-				.query(true)
+			nock("http://localhost")
+				.get("/")
 				.reply(200, {});
 
-			request.send((err, data) => {
+			request._actuallySend({ path: "/" }, null, (err, data) => {
 				expect(err).toBeNull();
 				expect(data).not.toBeNull();
 				done();
@@ -136,11 +135,11 @@ describe("request", () => {
 		test("make a POST request", done => {
 			const request = createRequest(apiPackage, apiMethod, apiKey);
 
-			nock("http://ws.audioscrobbler.com")
-				.post("/2.0/")
+			nock("http://localhost")
+				.post("/")
 				.reply(200, {});
 
-			request.send("POST", (err, data) => {
+			request._actuallySend({ path: "/", method: "POST" }, null, (err, data) => {
 				expect(err).toBeNull();
 				expect(data).not.toBeNull();
 				done();
@@ -150,12 +149,12 @@ describe("request", () => {
 		test("handle an error", done => {
 			const request = createRequest(apiPackage, apiMethod, apiKey);
 
-			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
-				.reply(500);
+			nock("http://localhost")
+				.get("/")
+				.replyWithError("Error");
 
-			request.send((err, data) => {
-				expect(err).toBeInstanceOf(Error);
+			request._actuallySend({ path: "/" }, null, (err, data) => {
+				expect(err).not.toBeNull();
 				expect(data).toBeNull();
 				done();
 			});
@@ -221,10 +220,13 @@ describe("request", () => {
 
 		test("when callback is not passed, return promise", () => {
 			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const spy = sinon.spy(requestPrototype, "send");
 
 			sinon.stub(requestPrototype, "_actuallySend");
-			
+
 			const response = request.send();
+
+			expect(spy.getCall(0).args[0]).toBeUndefined();
 			
 			expect(response).toBeInstanceOf(Promise);
 		});
