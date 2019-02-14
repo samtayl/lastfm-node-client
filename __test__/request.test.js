@@ -2,22 +2,16 @@ const { URL, URLSearchParams } = require("url");
 const crypto = require("crypto");
 const nock = require("nock");
 const sinon = require("sinon");
-const createRequest = require("../lib/request");
+const APIRequest = require("../lib/request");
 
 describe("request", () => {
-	describe("createRequest()", () => {
-		test("return request object", function() {
-			const request = createRequest("<apiMethod>", "<apiPackage>", "<apiKey>");
-
-			expect(typeof request).toBe("object");
-		});
-
+	describe("request()", () => {
 		test("assign request object method, api_key, and sk properties from apiPackage and apiMethod, apiKey, and sessionKey arguments", () => {
 			const apiPackage = "<apiPackage>";
 			const apiMethod = "<apiMethod>";
 			const apiKey = "<apiKey>";
 			const sessionKey = "<sessionKey>";
-			const request = createRequest(apiPackage, apiMethod, apiKey, {}, sessionKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey, {}, sessionKey);
 
 			expect(request.method).toBe(apiPackage + "." + apiMethod);
 			expect(request.api_key).toBe(apiKey);
@@ -31,7 +25,7 @@ describe("request", () => {
 
 			params[name] = value;
 
-			const request = createRequest("<apiPackage>", "<apiMethod>", "<apiKey>", params);
+			const request = new APIRequest("<apiPackage>", "<apiMethod>", "<apiKey>", params);
 
 			expect(request[name]).toBe(value);
 		});
@@ -51,7 +45,7 @@ describe("request", () => {
 				sk: sessionKeyParam
 			};
 
-			const request = createRequest(apiPackageArg, apiMethodArg, apiKeyArg, params, sessionKeyArg);
+			const request = new APIRequest(apiPackageArg, apiMethodArg, apiKeyArg, params, sessionKeyArg);
 
 			expect(request.method).toBe(apiPackageArg + "." + apiMethodArg);
 			expect(request.api_key).toBe(apiKeyArg);
@@ -59,7 +53,7 @@ describe("request", () => {
 		});
 
 		test("set the format property to json", () => {
-			const request = createRequest("<apiPackage>", "<apiMethod>", "<apiKey>");
+			const request = new APIRequest("<apiPackage>", "<apiMethod>", "<apiKey>");
 
 			expect(request.format).toBe("json");
 		});
@@ -70,13 +64,13 @@ describe("request", () => {
 				format: formatParam
 			};
 
-			const request = createRequest("<apiPackage>", "<apiMethod>", "<apiKey>", params);
+			const request = new APIRequest("<apiPackage>", "<apiMethod>", "<apiKey>", params);
 
 			expect(request.format).toBe("json");
 		});
 
 		test("don't set the sk property if a sessionKey paramater is not passed", () => {
-			const request = createRequest("<apiPackage>", "<apiMethod>", "<apiKey>");
+			const request = new APIRequest("<apiPackage>", "<apiMethod>", "<apiKey>");
 
 			expect(request.hasOwnProperty("sk")).toBe(false);
 		});
@@ -86,7 +80,7 @@ describe("request", () => {
 				callback: "<callback param>"
 			};
 
-			const request = createRequest("<apiPackage>", "<apiMethod>", "<apiKey>", params, "<sessionKey>");
+			const request = new APIRequest("<apiPackage>", "<apiMethod>", "<apiKey>", params, "<sessionKey>");
 
 			expect(request["callback"]).toBeUndefined();
 		});
@@ -94,7 +88,7 @@ describe("request", () => {
 
 	describe("request.sign()", () => {
 		test("assign self api_sig property with value of an md5 hash of all property names and values (excluding format and callback properties) ordered alphabetically and appended with a shared secret", () => {
-			const request = createRequest("<apiPackage>", "<apiMethod>", "<apiKey>");
+			const request = new APIRequest("<apiPackage>", "<apiMethod>", "<apiKey>");
 			const secret = "<secret>";
 			const params = Object.entries(request).sort(([nameA], [nameB]) => nameA.localeCompare(nameB));
 			let paramString = "";
@@ -119,7 +113,7 @@ describe("request", () => {
 		const apiKey = "<apiKey>";
 
 		test("make a GET request", done => {
-			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey);
 
 			nock("http://localhost")
 				.get("/")
@@ -133,7 +127,7 @@ describe("request", () => {
 		});
 
 		test("make a POST request", done => {
-			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey);
 
 			nock("http://localhost")
 				.post("/")
@@ -147,7 +141,7 @@ describe("request", () => {
 		});
 
 		test("handle an error", done => {
-			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey);
 
 			nock("http://localhost")
 				.get("/")
@@ -165,7 +159,7 @@ describe("request", () => {
 		const apiPackage = "<apiPackage>";
 		const apiMethod = "<apiMethod>";
 		const apiKey = "<apiKey>";
-		const requestPrototype = Object.getPrototypeOf(createRequest());
+		const requestPrototype = Object.getPrototypeOf(new APIRequest());
 
 		afterEach(() => {
 			if(typeof requestPrototype["_actuallySend"].restore === "function") {
@@ -174,7 +168,7 @@ describe("request", () => {
 		});
 
 		test("when method is POST, set options.method as POST and add own properties to body params", () => {
-			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey);
 
 			sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
 				expect(options.method).toBe("POST");
@@ -190,7 +184,7 @@ describe("request", () => {
 		});
 		
 		test("when method is not POST, add own properties to query params", () => {
-			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey);
 
 			sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
 				expect(options.method).not.toBe("POST");
@@ -207,7 +201,7 @@ describe("request", () => {
 		});
 
 		test("when callback is passed, return undefined", () => {
-			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey);
 
 			sinon.stub(requestPrototype, "_actuallySend").callsFake((options, body, callback) => {
 				expect(callback).toBeDefined();
@@ -219,7 +213,7 @@ describe("request", () => {
 		});
 
 		test("when callback is not passed, return promise", () => {
-			const request = createRequest(apiPackage, apiMethod, apiKey);
+			const request = new APIRequest(apiPackage, apiMethod, apiKey);
 			const spy = sinon.spy(requestPrototype, "send");
 
 			sinon.stub(requestPrototype, "_actuallySend");
