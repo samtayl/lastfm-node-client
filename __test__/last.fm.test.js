@@ -1,5 +1,5 @@
 const nock = require("nock");
-const LastFm = require("../lib/last.fm.js");
+const LastFm = require("../lib/LastFm.js");
 
 describe("LastFm", () => {
 	const apiKey = "<apiKey>";
