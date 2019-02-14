@@ -9,33 +9,33 @@ describe("LastFm", () => {
 	describe("constructor()", () => {
 		test("set apiKey, secret, and sessionKey properties", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 			expect(lastFm.apiKey).toBe(apiKey);
 			expect(lastFm.secret).toBe(secret);
 			expect(lastFm.sessionKey).toBe(sessionKey);
 		});
-	
+
 		test("throw TypeError if apikey argument is not of type string", () => {
 			function throwTypeError() {
 				new LastFm();
 			}
-	
+
 			expect(throwTypeError).toThrow(TypeError);
 		});
-	
+
 		test("throw TypeError if secret argument is passed and not of type string", () => {
 			function throwTypeError() {
 				new LastFm(apiKey, null);
 			}
-	
+
 			expect(throwTypeError).toThrow(TypeError);
 		});
-	
+
 		test("throw TypeError if sessionKey argument is passed and not of type string", () => {
 			function throwTypeError() {
 				new LastFm(apiKey, secret, null);
 			}
-	
+
 			expect(throwTypeError).toThrow(TypeError);
 		});
 	});
@@ -69,7 +69,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get tags of an album", done => {
+	test("get tags of an album added by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -99,7 +99,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("remove a tag from an album", done => {
+	test("remove tag from an album", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -142,14 +142,14 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get corrections of an artist", done => {
+	test("get correction of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "artist.getCorrection", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.artistGetCorrection({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -172,7 +172,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get similar artists to an artist", done => {
+	test("get similar to an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -187,9 +187,9 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get tags of an artist", done => {
+	test("get tags of an artist added by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "artist.getTags", api_key: apiKey, format: "json" })
@@ -204,7 +204,7 @@ describe("LastFm", () => {
 
 	test("get top albums of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "artist.getTopAlbums", api_key: apiKey, format: "json" })
@@ -219,12 +219,12 @@ describe("LastFm", () => {
 
 	test("get top tags of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "artist.getTopTags", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.artistGetTopTags({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -234,12 +234,12 @@ describe("LastFm", () => {
 
 	test("get top tracks of an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "artist.getTopTracks", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.artistGetTopTracks({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -247,7 +247,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("remove a tag from an artist", done => {
+	test("remove tag from an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -263,12 +263,12 @@ describe("LastFm", () => {
 
 	test("search for an artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "artist.search", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.artistSearch({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -276,7 +276,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get a mobile session", done => {
+	test("get a session key for an account", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -290,14 +290,14 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get a session key", done => {
+	test("get a session key for an account", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "auth.getSession", api_key: apiKey, format: "json", api_sig:  /.+/ })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.authGetSession({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -312,7 +312,7 @@ describe("LastFm", () => {
 			.get("/2.0/")
 			.query({ method: "auth.getToken", api_key: apiKey, format: "json", api_sig:  /.+/ })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.authGetToken((err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -327,7 +327,7 @@ describe("LastFm", () => {
 			.get("/2.0/")
 			.query({ method: "chart.getTopArtists", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.chartGetTopArtists({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -337,12 +337,12 @@ describe("LastFm", () => {
 
 	test("get the top tags chart", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "chart.getTopTags", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.chartGetTopTags({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -352,12 +352,12 @@ describe("LastFm", () => {
 
 	test("get the top tracks chart", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "chart.getTopTracks", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.chartGetTopTracks({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -367,12 +367,12 @@ describe("LastFm", () => {
 
 	test("get top artists of a country", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "geo.getTopArtists", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.geoGetTopArtists({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -382,12 +382,12 @@ describe("LastFm", () => {
 
 	test("get top tracks of a country", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "geo.getTopTracks", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.geoGetTopTracks({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -395,14 +395,14 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get artists in the library of a user", done => {
+	test("get artists in library of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "library.getArtists", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.libraryGetArtists({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -412,12 +412,12 @@ describe("LastFm", () => {
 
 	test("get info of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "tag.getInfo", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.tagGetInfo({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -425,14 +425,14 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get similar tags to a tag", done => {
+	test("get similar to a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "tag.getSimilar", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.tagGetSimilar({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -442,12 +442,12 @@ describe("LastFm", () => {
 
 	test("get top albums of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "tag.getTopAlbums", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.tagGetTopAlbums({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -457,12 +457,12 @@ describe("LastFm", () => {
 
 	test("get top artists of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "tag.getTopArtists", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.tagGetTopArtists({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -472,12 +472,12 @@ describe("LastFm", () => {
 
 	test("get top tags", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "tag.getTopTags", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.tagGetTopTags((err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -487,12 +487,12 @@ describe("LastFm", () => {
 
 	test("get top tracks of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "tag.getTopTracks", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.tagGetTopTracks({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -502,12 +502,12 @@ describe("LastFm", () => {
 
 	test("get weekly charts of a tag", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "tag.getWeeklyChartList", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.tagGetWeeklyChartList({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -529,14 +529,14 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get corrections of a track", done => {
+	test("get correction of a track and artist", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "track.getCorrection", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.trackGetCorrection({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -559,7 +559,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get similar tracks to a track", done => {
+	test("get similar to a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -574,9 +574,9 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get tags of a track", done => {
+	test("get tags of a track added by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "track.getTags", api_key: apiKey, format: "json" })
@@ -591,12 +591,12 @@ describe("LastFm", () => {
 
 	test("get top tags of a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
-	
+
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
 			.query({ method: "track.getTopTags", api_key: apiKey, format: "json" })
 			.reply(200, { status: "ok" });
-	
+
 		lastFm.trackGetTopTags({}, (err, data) => {
 			expect(err).toBeNull();
 			expect(data).toEqual({ status: "ok" });
@@ -617,8 +617,8 @@ describe("LastFm", () => {
 			done();
 		});
 	});
-	
-	test("remove a tag from a track", done => {
+
+	test("remove tag from a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -645,7 +645,7 @@ describe("LastFm", () => {
 			done();
 		});
 	});
-	
+
 	test("search for a track", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
@@ -689,7 +689,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get tracks by an artist scrobbled by a user", done => {
+	test("get tracks of an artist scrobbled by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -734,7 +734,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get tracks loved by a user", done => {
+	test("get loved tracks of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -749,7 +749,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get tags added by a user", done => {
+	test("get items of a tag added by a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -779,7 +779,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get top albums listened to by a user", done => {
+	test("get top albums of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -794,7 +794,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get top artists listented to by a user", done => {
+	test("get top artists of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -809,7 +809,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get top tags used by a user", done => {
+	test("get top tags of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
@@ -824,7 +824,7 @@ describe("LastFm", () => {
 		});
 	});
 
-	test("get top tracks listened to by a user", done => {
+	test("get top tracks of a user", done => {
 		const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 		nock("http://ws.audioscrobbler.com")
