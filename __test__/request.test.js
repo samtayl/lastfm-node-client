@@ -2,7 +2,7 @@ const { URL, URLSearchParams } = require("url");
 const crypto = require("crypto");
 const nock = require("nock");
 const sinon = require("sinon");
-const ApiRequest = require("../lib/request");
+const ApiRequest = require("../lib/ApiRequest");
 
 describe("request", () => {
 	describe("request()", () => {
