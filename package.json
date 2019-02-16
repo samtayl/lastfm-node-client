@@ -17,6 +17,7 @@
   "author": "Samuel Taylor <rattletone@protonmail.com>",
   "license": "MIT",
   "scripts": {
+    "lint": "eslint",
     "test": "jest"
   },
   "devDependencies": {
