@@ -1,7 +1,5 @@
-const { URL, URLSearchParams } = require("url");
 const crypto = require("crypto");
 const nock = require("nock");
-const sinon = require("sinon");
 const ApiRequest = require("../lib/ApiRequest");
 
 describe("ApiRequest", () => {
@@ -45,7 +43,7 @@ describe("ApiRequest", () => {
 					paramString += name + value;
 				}
 			}
-			
+
 			const hash = crypto
 				.createHash("md5")
 				.update(paramString + secret)
@@ -57,15 +55,18 @@ describe("ApiRequest", () => {
 		});
 	});
 
-	describe("ApiRequest._actuallySend()", () => {
+	describe("ApiRequest.send()", () => {
+		const apiKey = "<apiKey>";
+		const apiMethod = "<apiPackage>.<apiMethod>";
+
 		test("make a GET request", done => {
 			const apiRequest = new ApiRequest();
 
-			nock("http://localhost")
-				.get("/")
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
 				.reply(200, {});
 
-			apiRequest._actuallySend({ path: "/" }, null, (err, data) => {
+			apiRequest.send((err, data) => {
 				expect(err).toBeNull();
 				expect(data).not.toBeNull();
 				done();
@@ -75,11 +76,11 @@ describe("ApiRequest", () => {
 		test("make a POST request", done => {
 			const apiRequest = new ApiRequest();
 
-			nock("http://localhost")
-				.post("/")
+			nock("http://ws.audioscrobbler.com")
+				.post("/2.0/")
 				.reply(200, {});
 
-			apiRequest._actuallySend({ path: "/", method: "POST" }, null, (err, data) => {
+			apiRequest.send("POST", (err, data) => {
 				expect(err).toBeNull();
 				expect(data).not.toBeNull();
 				done();
@@ -87,68 +88,53 @@ describe("ApiRequest", () => {
 		});
 
 		test("handle an error", done => {
-			const apiRequest = new ApiRequest;
+			const apiRequest = new ApiRequest();
 
-			nock("http://localhost")
-				.get("/")
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
 				.replyWithError("Error");
 
-			apiRequest._actuallySend({ path: "/" }, null, (err, data) => {
+			apiRequest.send((err, data) => {
 				expect(err).not.toBeNull();
 				expect(data).toBeNull();
 				done();
 			});
 		});
-	});
 
-	describe("ApiRequest.send()", () => {
-		const apiKey = "<apiKey>";
-		const apiMethod = "<apiPackage>.<apiMethod>";
-		const apiRequestPrototype = Object.getPrototypeOf(new ApiRequest());
-
-		afterEach(() => {
-			if(typeof apiRequestPrototype._actuallySend.restore === "function") {
-				apiRequestPrototype._actuallySend.restore();
-			}
-		});
-
-		test("when method is POST, set options.method to POST and add own properties to body params", () => {
+		test("when method is POST, set options.method to POST and add own properties to body params", done => {
 			const apiRequest = (new ApiRequest())
 				.set({
 					api_key: apiKey,
 					method: apiMethod
 				});
 
-			sinon.stub(apiRequestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-				const searchParams = new URLSearchParams(body);
+			nock("http://ws.audioscrobbler.com")
+				.post("/2.0/", { api_key: apiRequest.apiKey, method: apiRequest.apiMethod, format: apiRequest.format })
+				.reply(200, {});
 
-				expect(options.method).toBe("POST");
-				expect(searchParams.get("method")).toBe(apiRequest.method);
-				expect(searchParams.get("api_key")).toBe(apiRequest.api_key);
-				expect(searchParams.get("format")).toBe(apiRequest.format);
+			apiRequest.send("POST", (err, data) => {
+				expect(err).toBeNull();
+				expect(data).not.toBeNull();
+				done();
 			});
-
-			apiRequest.send("POST");
 		});
-		
-		test("when method is not POST, add own properties to query params", () => {
+
+		test("when method is not POST, add own properties to query params", done => {
 			const apiRequest = (new ApiRequest())
 				.set({
 					api_key: apiKey,
 					method: apiMethod
 				});
 
-			sinon.stub(apiRequestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-				const url = new URL(`http://${options.hostname + options.path}`);
-				const searchParams = url.searchParams;
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/", { api_key: apiRequest.apiKey, method: apiRequest.apiMethod, format: apiRequest.format })
+				.reply(200, {});
 
-				expect(options.method).not.toBe("POST");
-				expect(searchParams.get("method")).toBe(apiRequest.method);
-				expect(searchParams.get("api_key")).toBe(apiRequest.api_key);
-				expect(searchParams.get("format")).toBe(apiRequest.format);
+			apiRequest.send((err, data) => {
+				expect(err).toBeNull();
+				expect(data).not.toBeNull();
+				done();
 			});
-			
-			apiRequest.send();
 		});
 
 		test("when callback is passed, return undefined", () => {
@@ -157,14 +143,14 @@ describe("ApiRequest", () => {
 					api_key: apiKey,
 					method: apiMethod
 				})
+			
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
+				.reply(200, {});
 
-			sinon.stub(apiRequestPrototype, "_actuallySend").callsFake((options, body, callback) => {
-				expect(callback).toBeDefined();
-			});
+			const apiResponse = apiRequest.send(() => {});
 
-			const response = apiRequest.send(() => {});
-
-			expect(response).toBeUndefined();
+			expect(apiResponse).toBeUndefined();
 		});
 
 		test("when callback is not passed, return promise", () => {
@@ -174,14 +160,13 @@ describe("ApiRequest", () => {
 					method: apiMethod
 				});
 
-			const spy = sinon.spy(apiRequestPrototype, "send");
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
+				.reply(200, {});
 
-			sinon.stub(apiRequestPrototype, "_actuallySend");
+			const apiResponse = apiRequest.send();
 
-			const response = apiRequest.send();
-
-			expect(spy.getCall(0).args[0]).toBeUndefined();
-			expect(response).toBeInstanceOf(Promise);
+			expect(apiResponse).toBeInstanceOf(Promise);
 		});
 	});
 });
