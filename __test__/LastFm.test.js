@@ -8,7 +8,7 @@ describe("LastFm", () => {
 
 	describe("constructor()", () => {
 		test("set apiKey, secret, and sessionKey properties", () => {
-			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 			expect(lastFm.apiKey).toBe(apiKey);
 			expect(lastFm.secret).toBe(secret);
@@ -41,7 +41,7 @@ describe("LastFm", () => {
 	});
 
 	test("add tags to an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "album.addTags", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -55,7 +55,7 @@ describe("LastFm", () => {
 	});
 
 	test("get info of an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -70,7 +70,7 @@ describe("LastFm", () => {
 	});
 
 	test("get tags of an album added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -85,7 +85,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tags of an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -100,7 +100,7 @@ describe("LastFm", () => {
 	});
 
 	test("remove tag from an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "album.removeTag", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -114,7 +114,7 @@ describe("LastFm", () => {
 	});
 
 	test("search for an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -129,7 +129,7 @@ describe("LastFm", () => {
 	});
 
 	test("add tags to an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "artist.addTags", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -143,7 +143,7 @@ describe("LastFm", () => {
 	});
 
 	test("get correction of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -158,7 +158,7 @@ describe("LastFm", () => {
 	});
 
 	test("get info of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -173,7 +173,7 @@ describe("LastFm", () => {
 	});
 
 	test("get similar to an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -188,7 +188,7 @@ describe("LastFm", () => {
 	});
 
 	test("get tags of an artist added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -203,7 +203,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top albums of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -218,7 +218,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tags of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -233,7 +233,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tracks of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -248,7 +248,7 @@ describe("LastFm", () => {
 	});
 
 	test("remove tag from an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "artist.removeTag", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -262,7 +262,7 @@ describe("LastFm", () => {
 	});
 
 	test("search for an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -277,7 +277,7 @@ describe("LastFm", () => {
 	});
 
 	test("get a session key for an account", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "auth.getMobileSession", api_key: apiKey, format: "json", api_sig:  /.+/ })
@@ -291,7 +291,7 @@ describe("LastFm", () => {
 	});
 
 	test("get a session key for an account", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -306,7 +306,7 @@ describe("LastFm", () => {
 	});
 
 	test("get a token", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -321,7 +321,7 @@ describe("LastFm", () => {
 	});
 
 	test("get the top artists chart", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 	
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -336,7 +336,7 @@ describe("LastFm", () => {
 	});
 
 	test("get the top tags chart", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -351,7 +351,7 @@ describe("LastFm", () => {
 	});
 
 	test("get the top tracks chart", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -366,7 +366,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top artists of a country", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -381,7 +381,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tracks of a country", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -396,7 +396,7 @@ describe("LastFm", () => {
 	});
 
 	test("get artists in library of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -411,7 +411,7 @@ describe("LastFm", () => {
 	});
 
 	test("get info of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -426,7 +426,7 @@ describe("LastFm", () => {
 	});
 
 	test("get similar to a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -441,7 +441,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top albums of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -456,7 +456,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top artists of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -471,7 +471,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tags", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -486,7 +486,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tracks of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -501,7 +501,7 @@ describe("LastFm", () => {
 	});
 
 	test("get weekly charts of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -516,7 +516,7 @@ describe("LastFm", () => {
 	});
 
 	test("add tags to a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "track.addTags", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -530,7 +530,7 @@ describe("LastFm", () => {
 	});
 
 	test("get correction of a track and artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -545,7 +545,7 @@ describe("LastFm", () => {
 	});
 
 	test("get info of a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -560,7 +560,7 @@ describe("LastFm", () => {
 	});
 
 	test("get similar to a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -575,7 +575,7 @@ describe("LastFm", () => {
 	});
 
 	test("get tags of a track added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -590,7 +590,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tags of a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -605,7 +605,7 @@ describe("LastFm", () => {
 	});
 
 	test("love a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "track.love", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -619,7 +619,7 @@ describe("LastFm", () => {
 	});
 
 	test("remove tag from a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "track.removeTag", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -633,7 +633,7 @@ describe("LastFm", () => {
 	});
 
 	test("scrobble a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "track.scrobble", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -647,7 +647,7 @@ describe("LastFm", () => {
 	});
 
 	test("search for a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -662,7 +662,7 @@ describe("LastFm", () => {
 	});
 
 	test("unlove a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "track.unlove", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -676,7 +676,7 @@ describe("LastFm", () => {
 	});
 
 	test("update now playing", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0/", { method: "track.updateNowPlaying", api_key: apiKey, format: "json", sk: sessionKey, api_sig:  /.+/ })
@@ -690,7 +690,7 @@ describe("LastFm", () => {
 	});
 
 	test("get tracks of an artist scrobbled by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -705,7 +705,7 @@ describe("LastFm", () => {
 	});
 
 	test("get friends of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -720,7 +720,7 @@ describe("LastFm", () => {
 	});
 
 	test("get info of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -735,7 +735,7 @@ describe("LastFm", () => {
 	});
 
 	test("get loved tracks of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -750,7 +750,7 @@ describe("LastFm", () => {
 	});
 
 	test("get items of a tag added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -765,7 +765,7 @@ describe("LastFm", () => {
 	});
 
 	test("get recent tracks of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -780,7 +780,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top albums of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -795,7 +795,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top artists of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -810,7 +810,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tags of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -825,7 +825,7 @@ describe("LastFm", () => {
 	});
 
 	test("get top tracks of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -840,7 +840,7 @@ describe("LastFm", () => {
 	});
 
 	test("get weekly album chart of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -855,7 +855,7 @@ describe("LastFm", () => {
 	});
 
 	test("get weekly artist chart of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -870,7 +870,7 @@ describe("LastFm", () => {
 	});
 
 	test("get weekly charts of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
@@ -885,7 +885,7 @@ describe("LastFm", () => {
 	});
 
 	test("get weekly track chart of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
 		nock("http://ws.audioscrobbler.com")
 			.get("/2.0/")
