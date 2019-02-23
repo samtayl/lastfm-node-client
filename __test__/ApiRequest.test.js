@@ -64,6 +64,7 @@ describe("ApiRequest", () => {
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0/")
+				.query({ format: "json" })
 				.reply(200, {});
 
 			apiRequest.send((err, data) => {
@@ -77,7 +78,7 @@ describe("ApiRequest", () => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.post("/2.0/")
+				.post("/2.0/", { format: "json" })
 				.reply(200, {});
 
 			apiRequest.send("POST", (err, data) => {
@@ -92,6 +93,7 @@ describe("ApiRequest", () => {
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0/")
+				.query({ format: "json" })
 				.replyWithError("Error");
 
 			apiRequest.send((err, data) => {
@@ -109,7 +111,7 @@ describe("ApiRequest", () => {
 				});
 
 			nock("http://ws.audioscrobbler.com")
-				.post("/2.0/", { api_key: apiRequest.apiKey, method: apiRequest.apiMethod, format: apiRequest.format })
+				.post("/2.0/", { api_key: apiRequest.api_key, method: apiRequest.method, format: apiRequest.format })
 				.reply(200, {});
 
 			apiRequest.send("POST", (err, data) => {
@@ -127,7 +129,8 @@ describe("ApiRequest", () => {
 				});
 
 			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/", { api_key: apiRequest.apiKey, method: apiRequest.apiMethod, format: apiRequest.format })
+				.get("/2.0/")
+				.query({ api_key: apiRequest.api_key, method: apiRequest.method, format: apiRequest.format })
 				.reply(200, {});
 
 			apiRequest.send((err, data) => {
@@ -146,6 +149,7 @@ describe("ApiRequest", () => {
 			
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0/")
+				.query({ format: "json" })
 				.reply(200, {});
 
 			const apiResponse = apiRequest.send(() => {});
@@ -162,6 +166,7 @@ describe("ApiRequest", () => {
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0/")
+				.query({ format: "json" })
 				.reply(200, {});
 
 			const apiResponse = apiRequest.send();
