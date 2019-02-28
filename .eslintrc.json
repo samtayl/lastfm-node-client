@@ -73,7 +73,10 @@
             }
         ],
         "func-names": "error",
-        "func-style": "error",
+        "func-style": [
+            "error",
+            "declaration"
+        ],
         "function-paren-newline": "error",
         "generator-star-spacing": [
             "error",
@@ -120,7 +123,7 @@
             }
         ],
         "line-comment-position": "error",
-        "linebreak-style": "error",
+        "linebreak-style": "off",
         "lines-around-comment": [
             "error",
             {
