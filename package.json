@@ -18,15 +18,13 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint",
-    "lint-fix": "eslint --fix",
-    "test": "jest"
+    "lint:fix": "eslint --fix",
+    "test": "jest",
+    "test:verbose": "jest --verbose"
   },
   "devDependencies": {
     "eslint": "^5.14.0",
     "jest": "^24.1.0",
     "nock": "^10.0.6"
-  },
-  "jest": {
-    "verbose": true
   }
 }
