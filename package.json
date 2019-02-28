@@ -18,6 +18,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint",
+    "lint-fix": "eslint --fix",
     "test": "jest"
   },
   "devDependencies": {
