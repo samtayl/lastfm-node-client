@@ -157,7 +157,11 @@ describe("ApiRequest", () => {
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0/")
-				.query({ "format": "json" })
+				.query({
+					"api_key": apiRequest.api_key,
+					"format": apiRequest.format,
+					"method": apiRequest.method
+				})
 				.reply(200, {});
 
 			const apiResponse = apiRequest.send(() => {
@@ -176,7 +180,11 @@ describe("ApiRequest", () => {
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0/")
-				.query({ "format": "json" })
+				.query({
+					"api_key": apiRequest.api_key,
+					"format": apiRequest.format,
+					"method": apiRequest.method
+				})
 				.reply(200, {});
 
 			const apiResponse = apiRequest.send();
