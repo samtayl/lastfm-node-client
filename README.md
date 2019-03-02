@@ -1,7 +1,7 @@
 # Last.Fm Node Client
 
-[![Build Status](https://travis-ci.org/rattletone/last.fm.js.svg?branch=master)](https://travis-ci.org/rattletone/last.fm.js)
-[![Coverage Status](https://coveralls.io/repos/github/rattletone/last.fm.js/badge.svg?branch=master)](https://coveralls.io/github/rattletone/last.fm.js?branch=master)
+[![Build Status](https://travis-ci.org/rattletone/lastfm-node-client.svg?branch=master)](https://travis-ci.org/rattletone/lastfm-node-client)
+[![Coverage Status](https://coveralls.io/repos/github/rattletone/lastfm-node-client/badge.svg?branch=master)](https://coveralls.io/github/rattletone/lastfm-node-client?branch=master)
 
 This is a Node.js JavaScript library for interfacing with the Last.fm API.
 
@@ -14,7 +14,7 @@ See the [Last.Fm API web page](https://www.last.fm/api) for information about th
 ## Installation
 
 ```sh
-$ npm install last.fm.js
+$ npm install lastfm-node-client
 ```
 
 Node.js **7.0.0** or later is required.
@@ -24,7 +24,7 @@ Node.js **7.0.0** or later is required.
 First, you must instantiate the LastFm Class with an object parameter containing the details of your API account. `apiKey` is required, however since many endpoints of the API do not require authentication, `secret` and `sessionKey` are optional.
 
 ```js
-const LastFm = require("last.fm.js");
+const LastFm = require("lastfm-node-client");
 const lastFm = new LastFm({
     "apiKey": "API_KEY",
     "secret": "SECRET",
