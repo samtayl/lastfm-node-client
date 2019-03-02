@@ -5,7 +5,7 @@
   "main": "lib/LastFm.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rattletone/last.fm.js.git"
+    "url": "git+https://github.com/rattletone/lastfm-node-client.git"
   },
   "keywords": [
     "last.fm",
