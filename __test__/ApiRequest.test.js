@@ -59,7 +59,7 @@ describe("ApiRequest", () => {
 		const apiKey = "<apiKey>";
 		const apiMethod = "<apiPackage>.<apiMethod>";
 
-		test("make a GET request", done => {
+		test("make a GET request and handle response with callback", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -74,7 +74,18 @@ describe("ApiRequest", () => {
 			});
 		});
 
-		test("make a POST request", done => {
+		test("make a GET request and handle response with promise", () => {
+			const apiRequest = new ApiRequest();
+
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
+				.query({ "format": "json" })
+				.reply(200, {});
+
+			return expect(apiRequest.send()).resolves.not.toBeNull();
+		});
+
+		test("make a POST request and handle response with callback", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -88,7 +99,17 @@ describe("ApiRequest", () => {
 			});
 		});
 
-		test("handle an error", done => {
+		test("make a POST request and handle response with promise", () => {
+			const apiRequest = new ApiRequest();
+
+			nock("http://ws.audioscrobbler.com")
+				.post("/2.0/", { "format": "json" })
+				.reply(200, {});
+
+			expect(apiRequest.send("POST")).resolves.not.toBeNull();
+		});
+
+		test("handle an error with callback", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -103,7 +124,18 @@ describe("ApiRequest", () => {
 			});
 		});
 
-		test("when method is POST, set options.method to POST and add own properties to body params", done => {
+		test("handle an error with promise", () => {
+			const apiRequest = new ApiRequest();
+
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
+				.query({ "format": "json" })
+				.replyWithError("Error");
+
+			return expect(apiRequest.send()).rejects.toThrowError();
+		});
+
+		test("when method is POST, send as POST and add own properties to body params", done => {
 			const apiRequest = (new ApiRequest())
 				.set({
 					"api_key": apiKey,
@@ -125,7 +157,7 @@ describe("ApiRequest", () => {
 			});
 		});
 
-		test("when method is not POST, add own properties to query params", done => {
+		test("when method is not POST, send as GET and add own properties to query params", done => {
 			const apiRequest = (new ApiRequest())
 				.set({
 					"api_key": apiKey,
@@ -148,7 +180,7 @@ describe("ApiRequest", () => {
 			});
 		});
 
-		test("when callback is passed, return undefined", () => {
+		test("when callback is passed as first paramater return undefined", () => {
 			const apiRequest = (new ApiRequest())
 				.set({
 					"api_key": apiKey,
@@ -171,7 +203,30 @@ describe("ApiRequest", () => {
 			expect(apiResponse).toBeUndefined();
 		});
 
-		test("when callback is not passed, return promise", () => {
+		test("when callback is passed as second paramater return undefined", () => {
+			const apiRequest = (new ApiRequest())
+				.set({
+					"api_key": apiKey,
+					"method": apiMethod
+				});
+
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
+				.query({
+					"api_key": apiRequest.api_key,
+					"format": apiRequest.format,
+					"method": apiRequest.method
+				})
+				.reply(200, {});
+
+			const apiResponse = apiRequest.send("GET", () => {
+				// Do nothing
+			});
+
+			expect(apiResponse).toBeUndefined();
+		});
+
+		test("when callback is not passed as either first or second paramater, return promise", () => {
 			const apiRequest = (new ApiRequest())
 				.set({
 					"api_key": apiKey,
@@ -188,6 +243,27 @@ describe("ApiRequest", () => {
 				.reply(200, {});
 
 			const apiResponse = apiRequest.send();
+
+			expect(apiResponse).toBeInstanceOf(Promise);
+		});
+
+		test("when callback is not passed as second paramater, return promise", () => {
+			const apiRequest = (new ApiRequest())
+				.set({
+					"api_key": apiKey,
+					"method": apiMethod
+				});
+
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0/")
+				.query({
+					"api_key": apiRequest.api_key,
+					"format": apiRequest.format,
+					"method": apiRequest.method
+				})
+				.reply(200, {});
+
+			const apiResponse = apiRequest.send("GET", null);
 
 			expect(apiResponse).toBeInstanceOf(Promise);
 		});
