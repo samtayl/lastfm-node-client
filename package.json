@@ -17,7 +17,6 @@
   "author": "Samuel Taylor <rattletone@protonmail.com>",
   "license": "MIT",
   "scripts": {
-    "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "lint": "eslint",
     "test": "jest"
   },

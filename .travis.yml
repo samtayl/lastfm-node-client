@@ -3,4 +3,4 @@ node_js:
   - "11"
 
 after_success:
-  - npm run coverage
+  - jest --coverage --coverageReporters=text-lcov | coveralls
