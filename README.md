@@ -1,9 +1,9 @@
-# Last.fm.js
+# Last.Fm Node Client
 
 [![Build Status](https://travis-ci.org/rattletone/last.fm.js.svg?branch=master)](https://travis-ci.org/rattletone/last.fm.js)
 [![Coverage Status](https://coveralls.io/repos/github/rattletone/last.fm.js/badge.svg?branch=master)](https://coveralls.io/github/rattletone/last.fm.js?branch=master)
 
-Last.fm.js is a Node.js JavaScript library for interfacing with the Last.fm API.
+This is a Node.js JavaScript library for interfacing with the Last.fm API.
 
 * **Consistent**: Providing you a uniform set of abstractions that allows you to use the interface predictably and reliably.
 * **Versatile**: Adapting it's communication with the API, complying with it's specifications without you needing to adapt your code.
