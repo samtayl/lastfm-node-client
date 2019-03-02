@@ -56,7 +56,7 @@ Chaining `.then()`:
 
 ```js
 lastFm.userGetRecentTracks({
-    "user": "<user>"
+    "user": "USER"
 })
 .then((err, data)) => {
     console.log(data);
@@ -67,7 +67,7 @@ Using `await`:
 
 ```js
 const data = await lastFm.userGetRecentTracks({
-    "user": "<user>"
+    "user": "USER"
 });
 
 console.log(data);
@@ -79,7 +79,7 @@ An optional callback argument can also be passed. It is invoked with conventiona
 
 ```js
 lastFm.userGetRecentTracks({
-    "user": "<user>"
+    "user": "USER"
 },
 (err, data)) => {
     console.log(data);
