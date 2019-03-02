@@ -18,9 +18,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint",
-    "lint:fix": "eslint --fix",
-    "test": "jest",
-    "test:verbose": "jest --verbose"
+    "test": "jest"
   },
   "devDependencies": {
     "eslint": "^5.14.0",
