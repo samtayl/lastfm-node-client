@@ -25,7 +25,7 @@ describe("LastFm", () => {
 
 		test("throw TypeError if secret argument is passed and not of type string", () => {
 			function throwTypeError() {
-				new LastFm(apiKey, null);
+				new LastFm({ apiKey, "secret": null });
 			}
 
 			expect(throwTypeError).toThrow(TypeError);
@@ -33,10 +33,22 @@ describe("LastFm", () => {
 
 		test("throw TypeError if sessionKey argument is passed and not of type string", () => {
 			function throwTypeError() {
-				new LastFm(apiKey, secret, null);
+				new LastFm({ apiKey, "sessionKey": null });
 			}
 
 			expect(throwTypeError).toThrow(TypeError);
+		});
+
+		test("don't set secret property if not passed", () => {
+			const lastFm = new LastFm({ apiKey });
+
+			expect(lastFm.hasOwnProperty("secret")).toBeFalsy();
+		});
+
+		test("don't set sessionKey property if not passed", () => {
+			const lastFm = new LastFm({ apiKey });
+
+			expect(lastFm.hasOwnProperty("sessionKey")).toBeFalsy();
 		});
 	});
 
