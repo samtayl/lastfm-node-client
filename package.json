@@ -21,6 +21,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "coveralls": "^3.0.3",
     "eslint": "^5.14.0",
     "jest": "^24.1.0",
     "nock": "^10.0.6"
