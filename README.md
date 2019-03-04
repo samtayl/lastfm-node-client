@@ -1,5 +1,6 @@
 # Last.Fm Node Client
 
+[![npm](https://img.shields.io/npm/v/lastfm-node-client.svg)](https://www.npmjs.com/package/lastfm-node-client)
 [![Build Status](https://travis-ci.org/rattletone/lastfm-node-client.svg?branch=master)](https://travis-ci.org/rattletone/lastfm-node-client)
 [![Coverage Status](https://coveralls.io/repos/github/rattletone/lastfm-node-client/badge.svg?branch=master)](https://coveralls.io/github/rattletone/lastfm-node-client?branch=master)
 
@@ -58,7 +59,7 @@ Chaining `.then()`:
 lastFm.userGetRecentTracks({
     "user": "USER"
 })
-.then((err, data)) => {
+.then(data => {
     console.log(data);
 };
 ```
@@ -86,4 +87,6 @@ lastFm.userGetRecentTracks({
 });
 ```
 
-When callback is passed, methods do not return a `promise`, instead return `undefined`. The `params` parameter is required when the callback parameter is passed.
+When callback is passed, methods do not return a `promise`, instead return `undefined`. The `params` parameter is required when a callback argument is passed.
+
+**Note**: Endpoints `Auth.getToken` and `Tag.getTopTags` do not require additional parameters, as such, methods `lastFm.authGetToken()` and `lastFm.tagGetTopTags()` do not accept a `params` argument. A callback can be passed as the first argument.
