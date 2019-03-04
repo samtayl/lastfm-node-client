@@ -43,6 +43,8 @@ lastFm.userGetRecentTracks();
 
 Parameters can be passed to the API through the `params` argument as an object that will be sent directly with the request, either as a query for a GET request, or a body for a POST request. The property names will not be transformed or abstracted, and so they must match the endpoint parameters exactly.
 
+**Note**: Endpoints `Auth.getToken` and `Tag.getTopTags` do not require additional parameters, as such, methods `lastFm.authGetToken()` and `lastFm.tagGetTopTags()` do not accept a `params` argument.
+
 ```js
 lastFm.userGetRecentTracks({
     "user": "USER"
@@ -74,7 +76,7 @@ const data = await lastFm.userGetRecentTracks({
 console.log(data);
 ```
 
-An optional callback argument can also be passed. It is invoked with conventional `(err, data)` arguments; `err` being any exceptions thrown in the event of an error, `data` containing the JSON response of the API upon success.
+An optional callback can be passed as the last argument. It is invoked with conventional `(err, data)` parameters; `err` being any exceptions thrown in the event of an error, `data` containing the JSON response of the API upon success.
 
 **Note**: "Success" in this context means a successful request, however the API may return an error response for a number of reasons detailed in their [error codes documentation](https://www.last.fm/api/errorcodes).
 
@@ -87,6 +89,4 @@ lastFm.userGetRecentTracks({
 });
 ```
 
-When callback is passed, methods do not return a `promise`, instead return `undefined`. The `params` parameter is required when a callback argument is passed.
-
-**Note**: Endpoints `Auth.getToken` and `Tag.getTopTags` do not require additional parameters, as such, methods `lastFm.authGetToken()` and `lastFm.tagGetTopTags()` do not accept a `params` argument. A callback can be passed as the first argument.
+When callback is passed, methods do not return a `promise`, instead return the LastFm instance the method was called on. This allows you to chain requests.
