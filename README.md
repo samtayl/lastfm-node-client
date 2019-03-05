@@ -87,3 +87,28 @@ lastFm.userGetRecentTracks({
 ```
 
 When callback is passed, methods do not return a `promise`, instead return `undefined`. The `params` parameter is required when the callback parameter is passed.
+
+## Utility methods
+
+These methods do not correspond to an exact API endpoint, but are abstractions of the already provided methods to provide easier usage.
+
+### `lastFm.trackScrobbleMany`
+
+This method takes an array of objects that match the `params` parameter accepted by `lastFm.trackScrobble`. It allows for multiple tracks to be submitted to the API in one request.
+
+```js
+lastFm.trackScrobbleMany([
+    {
+        "artist": "ARTIST",
+        "album": "ALBUM",
+        "track": "TRACK",
+        "timestamp": "TIMESTAMP"
+    },
+    {
+        "artist": "ARTIST",
+        "album": "ALBUM",
+        "track": "TRACK",
+        "timestamp": "TIMESTAMP"
+    }
+]);
+```
