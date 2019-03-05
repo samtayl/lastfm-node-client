@@ -865,14 +865,7 @@ describe("LastFm", () => {
 		test("concatenate params array into single object, using array notation to distinguish each set of params, and call LastFm.trackScrobble() with that as the first argument", done => {
 			const lastFm = new LastFm({ apiKey, secret, sessionKey });
 			const spy = jest.spyOn(lastFm, "trackScrobble");
-			const params = [
-				{
-					"param": "<value>",
-				},
-				{
-					"param": "<value>"
-				}
-			];
+			const params = [{ "param": "<value>" }, { "param": "<value>" }];
 
 			nock("http://ws.audioscrobbler.com")
 				.post("/2.0/")
@@ -882,12 +875,11 @@ describe("LastFm", () => {
 				expect(err).toBeNull();
 				expect(data).toEqual({ "status": "ok" });
 				expect(spy).toBeCalledTimes(1);
-				
-				const firstCallArgs = spy.mock.calls[0];
-				const firstCallFirstArg = firstCallArgs[0];
+
+				const [firstCallArgs] = spy.mock.calls;
+				const [firstCallFirstArg] = firstCallArgs;
 
 				expect(JSON.stringify(firstCallFirstArg)).toBe("{\"param[1]\":\"<value>\",\"param[0]\":\"<value>\"}");
-
 				done();
 			});
 		});
@@ -895,11 +887,7 @@ describe("LastFm", () => {
 		test("if called with one params object, call LastFm.trackScrobble() with that as the first argument", done => {
 			const lastFm = new LastFm({ apiKey, secret, sessionKey });
 			const spy = jest.spyOn(lastFm, "trackScrobble");
-			const params = [
-				{
-					"param": "<value>",
-				}
-			];
+			const params = [{ "param": "<value>" }];
 
 			nock("http://ws.audioscrobbler.com")
 				.post("/2.0/")
@@ -909,12 +897,11 @@ describe("LastFm", () => {
 				expect(err).toBeNull();
 				expect(data).toEqual({ "status": "ok" });
 				expect(spy).toBeCalledTimes(1);
-				
-				const firstCallArgs = spy.mock.calls[0];
-				const firstCallFirstArg = firstCallArgs[0];
+
+				const [firstCallArgs] = spy.mock.calls;
+				const [firstCallFirstArg] = firstCallArgs;
 
 				expect(JSON.stringify(firstCallFirstArg)).toBe("{\"param\":\"<value>\"}");
-
 				done();
 			});
 		});
