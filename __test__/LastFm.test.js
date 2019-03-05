@@ -841,6 +841,72 @@ describe("LastFm", () => {
 		});
 	});
 
+	test("scrobble many tracks", done => {
+		const lastFm = new LastFm({ apiKey, secret, sessionKey });
+
+		nock("http://ws.audioscrobbler.com")
+			.post("/2.0/", {
+				"api_key": apiKey,
+				"api_sig": /.+/u,
+				"format": "json",
+				"method": "track.scrobble",
+				"sk": sessionKey
+			})
+			.reply(200, { "status": "ok" });
+
+		lastFm.trackScrobbleMany([], (err, data) => {
+			expect(err).toBeNull();
+			expect(data).toEqual({ "status": "ok" });
+			done();
+		});
+	});
+
+	describe("trackScrobbleMany()", () => {
+		test("concatenate params array into single object, using array notation to distinguish each set of params, and call LastFm.trackScrobble() with that as the first argument", done => {
+			const lastFm = new LastFm({ apiKey, secret, sessionKey });
+			const spy = jest.spyOn(lastFm, "trackScrobble");
+			const params = [{ "param": "<value>" }, { "param": "<value>" }];
+
+			nock("http://ws.audioscrobbler.com")
+				.post("/2.0/")
+				.reply(200, { "status": "ok" });
+
+			lastFm.trackScrobbleMany(params, (err, data) => {
+				expect(err).toBeNull();
+				expect(data).toEqual({ "status": "ok" });
+				expect(spy).toBeCalledTimes(1);
+
+				const [firstCallArgs] = spy.mock.calls;
+				const [firstCallFirstArg] = firstCallArgs;
+
+				expect(JSON.stringify(firstCallFirstArg)).toBe("{\"param[1]\":\"<value>\",\"param[0]\":\"<value>\"}");
+				done();
+			});
+		});
+
+		test("if called with one params object, call LastFm.trackScrobble() with that as the first argument", done => {
+			const lastFm = new LastFm({ apiKey, secret, sessionKey });
+			const spy = jest.spyOn(lastFm, "trackScrobble");
+			const params = [{ "param": "<value>" }];
+
+			nock("http://ws.audioscrobbler.com")
+				.post("/2.0/")
+				.reply(200, { "status": "ok" });
+
+			lastFm.trackScrobbleMany(params, (err, data) => {
+				expect(err).toBeNull();
+				expect(data).toEqual({ "status": "ok" });
+				expect(spy).toBeCalledTimes(1);
+
+				const [firstCallArgs] = spy.mock.calls;
+				const [firstCallFirstArg] = firstCallArgs;
+
+				expect(JSON.stringify(firstCallFirstArg)).toBe("{\"param\":\"<value>\"}");
+				done();
+			});
+		});
+	});
+
 	test("search for a track", done => {
 		const lastFm = new LastFm({ apiKey, secret, sessionKey });
 
