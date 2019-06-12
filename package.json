@@ -1,6 +1,6 @@
 {
   "name": "lastfm-node-client",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "JavaScript library for interfacing with the Last.fm API",
   "main": "lib/LastFm.js",
   "repository": {
