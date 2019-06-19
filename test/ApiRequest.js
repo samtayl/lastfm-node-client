@@ -1,6 +1,8 @@
 const crypto = require("crypto");
 const nock = require("nock");
 const ApiRequest = require("../lib/ApiRequest");
+const apiKey = "<apiKey>";
+const apiMethod = "<apiPackage>.<apiMethod>";
 
 describe("ApiRequest", () => {
 	describe("constructor()", () => {
@@ -27,26 +29,129 @@ describe("ApiRequest", () => {
 	});
 
 	describe("ApiRequest.sign()", () => {
-		test("set self api_sig property to an md5 hash of all property names and values, excluding format and callback properties, ordered alphabetically and appended with a shared secret", () => {
-			const apiRequest = (new ApiRequest())
+		test("set self api_sig property to an md5 hash of all property names and values, excluding format and callback, ordered by `String.prototype.charCodeAt()` return value, and appended with a shared secret", () => {
+			const apiRequest = new ApiRequest()
 				.set({
-					"api_key": "<apiKey>",
-					"method": "<apiPackage>.<apiMethod>"
+					"api_key": apiKey,
+					"method": apiMethod
 				});
 
 			const secret = "<secret>";
-			const params = Object.entries(apiRequest).sort(([nameA], [nameB]) => nameA.localeCompare(nameB));
-			let paramString = "";
+			const paramsString = Object
+				.entries(apiRequest)
+				.filter(([name]) => name !== "format" && name !== "callback")
+				.sort(([a], [b]) => {
+					for(let i = 0; i <= a.length || i <= b.length; i++) {
+						const charCodeA = a.charCodeAt(i) || 0;
+						const charCodeB = b.charCodeAt(i) || 0;
 
-			for(const [name, value] of params) {
-				if(name !== "format" && name !== "callback") {
-					paramString += name + value;
-				}
-			}
+						if(charCodeA < charCodeB) {
+							return -1;
+						}
+
+						if(charCodeA > charCodeB) {
+							return 1;
+						}
+					}
+				})
+				.map(param => param.join(""))
+				.join("");
 
 			const hash = crypto
 				.createHash("md5")
-				.update(paramString + secret)
+				.update(paramsString + secret)
+				.digest("hex");
+
+			apiRequest.sign(secret);
+
+			expect(apiRequest.api_sig).toBe(hash);
+		});
+
+		test("include all property names, excluding format and callback", () => {
+			const param1 = "<value1>";
+			const param2 = "<value2>"
+			const apiRequest = new ApiRequest()
+				.set({
+					param1,
+					param2
+				});
+
+			const secret = "<secret>";
+			const paramsArray = Object.entries(apiRequest);
+
+			expect(paramsArray.find(([name]) => name === "param1")).not.toBeUndefined();
+			expect(paramsArray.find(([name]) => name === "param2")).not.toBeUndefined();
+
+			const paramsArrayFiltered = paramsArray.filter(([name]) => name !== "format" && name !== "callback");
+			
+			expect(paramsArrayFiltered.find(([name]) => name === "format")).toBeUndefined();
+			expect(paramsArrayFiltered.find(([name]) => name === "callback")).toBeUndefined();
+
+			const paramsArrayFilteredSorted = paramsArrayFiltered.sort(([a], [b]) => {
+				for(let i = 0; i <= a.length || i <= b.length; i++) {
+					const charCodeA = a.charCodeAt(i) || 0;
+					const charCodeB = b.charCodeAt(i) || 0;
+
+					if(charCodeA < charCodeB) {
+						return -1;
+					}
+
+					if(charCodeA > charCodeB) {
+						return 1;
+					}
+				}
+			});
+
+			const paramStringsArrayFilteredSorted = paramsArrayFilteredSorted.map(param => param.join(""));
+			const paramsStringFilteredSorted = paramStringsArrayFilteredSorted.join("");
+			const hash = crypto
+				.createHash("md5")
+				.update(paramsStringFilteredSorted + secret)
+				.digest("hex");
+
+			apiRequest.sign(secret);
+
+			expect(apiRequest.api_sig).toBe(hash);
+		});
+
+		test("order key value pairs by `String.prototype.charCodeAt()` return value", () => {
+			const param1 = "<value1>";
+			const param2 = "<value2>";
+			const param12 = "<value12>";
+			const apiRequest = new ApiRequest()
+				.set({
+					param1,
+					param12,
+					param2
+				});
+
+			const secret = "<secret>";
+			const paramsArray = Object.entries(apiRequest);
+			const paramsArrayFiltered = paramsArray.filter(([name]) => name !== "format" && name !== "callback");
+			const paramsArrayFilteredSorted = paramsArrayFiltered.sort(([a], [b]) => {
+				for(let i = 0; i <= a.length || i <= b.length; i++) {
+					const charCodeA = a.charCodeAt(i) || 0;
+					const charCodeB = b.charCodeAt(i) || 0;
+
+					if(charCodeA < charCodeB) {
+						return -1;
+					}
+
+					if(charCodeA > charCodeB) {
+						return 1;
+					}
+				}
+			});
+
+			expect(paramsArrayFilteredSorted[0][0]).toBe("param1");
+			expect(paramsArrayFilteredSorted[1][0]).toBe("param12");
+			expect(paramsArrayFilteredSorted[2][0]).toBe("param2");
+
+			const paramStringsArrayFilteredSorted = paramsArrayFilteredSorted.map(param => param.join(""));
+			const paramsStringFilteredSorted = paramStringsArrayFilteredSorted.join("");
+			const hash = crypto
+				.createHash("md5")
+				.update(paramsStringFilteredSorted + secret)
 				.digest("hex");
 
 			apiRequest.sign(secret);
@@ -56,9 +161,6 @@ describe("ApiRequest", () => {
 	});
 
 	describe("ApiRequest.send()", () => {
-		const apiKey = "<apiKey>";
-		const apiMethod = "<apiPackage>.<apiMethod>";
-
 		test("make a GET request and handle response with callback", done => {
 			const apiRequest = new ApiRequest();
 
@@ -136,7 +238,7 @@ describe("ApiRequest", () => {
 		});
 
 		test("when method is POST, send as POST and add own properties to body params", done => {
-			const apiRequest = (new ApiRequest())
+			const apiRequest = new ApiRequest()
 				.set({
 					"api_key": apiKey,
 					"method": apiMethod
@@ -158,7 +260,7 @@ describe("ApiRequest", () => {
 		});
 
 		test("when method is not POST, send as GET and add own properties to query params", done => {
-			const apiRequest = (new ApiRequest())
+			const apiRequest = new ApiRequest()
 				.set({
 					"api_key": apiKey,
 					"method": apiMethod
@@ -181,7 +283,7 @@ describe("ApiRequest", () => {
 		});
 
 		test("when callback is passed as first paramater return undefined", () => {
-			const apiRequest = (new ApiRequest())
+			const apiRequest = new ApiRequest()
 				.set({
 					"api_key": apiKey,
 					"method": apiMethod
@@ -204,7 +306,7 @@ describe("ApiRequest", () => {
 		});
 
 		test("when callback is passed as second paramater return undefined", () => {
-			const apiRequest = (new ApiRequest())
+			const apiRequest = new ApiRequest()
 				.set({
 					"api_key": apiKey,
 					"method": apiMethod
@@ -227,7 +329,7 @@ describe("ApiRequest", () => {
 		});
 
 		test("when callback is not passed as either first or second paramater, return promise", () => {
-			const apiRequest = (new ApiRequest())
+			const apiRequest = new ApiRequest()
 				.set({
 					"api_key": apiKey,
 					"method": apiMethod
@@ -248,7 +350,7 @@ describe("ApiRequest", () => {
 		});
 
 		test("when callback is not passed as second paramater, return promise", () => {
-			const apiRequest = (new ApiRequest())
+			const apiRequest = new ApiRequest()
 				.set({
 					"api_key": apiKey,
 					"method": apiMethod
