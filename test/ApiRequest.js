@@ -118,11 +118,15 @@ describe("ApiRequest", () => {
 			const param1 = "<value1>";
 			const param2 = "<value2>";
 			const param12 = "<value12>";
+			const param22 = "<value122>";
+			const param112 = "<value112>";
 			const apiRequest = new ApiRequest()
 				.set({
+					param2,
+					param112,
+					param22,
 					param1,
-					param12,
-					param2
+					param12
 				});
 
 			const secret = "<secret>";
@@ -144,8 +148,10 @@ describe("ApiRequest", () => {
 			});
 
 			expect(paramsArrayFilteredSorted[0][0]).toBe("param1");
-			expect(paramsArrayFilteredSorted[1][0]).toBe("param12");
-			expect(paramsArrayFilteredSorted[2][0]).toBe("param2");
+			expect(paramsArrayFilteredSorted[1][0]).toBe("param112");
+			expect(paramsArrayFilteredSorted[2][0]).toBe("param12");
+			expect(paramsArrayFilteredSorted[3][0]).toBe("param2");
+			expect(paramsArrayFilteredSorted[4][0]).toBe("param22");
 
 			const paramStringsArrayFilteredSorted = paramsArrayFilteredSorted.map(param => param.join(""));
 			const paramsStringFilteredSorted = paramStringsArrayFilteredSorted.join("");
