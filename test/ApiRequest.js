@@ -106,7 +106,7 @@ describe("ApiRequest()", () => {
 				});
 		});
 
-		test("invoke callback if funtion is passed as the only argument", done => {
+		test("invoke callback if function is passed as the first argument and no second argument is passed", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -121,7 +121,7 @@ describe("ApiRequest()", () => {
 			});
 		});
 
-		test("invoke callback if funtion is passed as the second argument", done => {
+		test("invoke callback if function is passed as the second argument", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -136,7 +136,7 @@ describe("ApiRequest()", () => {
 			});
 		});
 
-		test("return promise if function is not passed as the only argument", () => {
+		test("return promise if function is not passed as the first argument and no second argument is passed", () => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -215,10 +215,10 @@ describe("ApiRequest()", () => {
 				.replyWithError({});
 
 			apiRequest.send((err, data) => {
-					expect(err).toBeDefined();
-					expect(data).toBeNull();
-					done();
-				});
+				expect(err).toBeDefined();
+				expect(data).toBeNull();
+				done();
+			});
 		});
 	});
 });
