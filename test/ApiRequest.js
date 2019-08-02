@@ -1,47 +1,44 @@
 const crypto = require("crypto");
 const nock = require("nock");
 const ApiRequest = require("../lib/ApiRequest");
-const apiKey = "<apiKey>";
-const apiMethod = "<apiPackage>.<apiMethod>";
 
-describe("ApiRequest", () => {
+describe("ApiRequest()", () => {
 	describe("constructor()", () => {
-		test("set format property to json", () => {
+		test("define `format` property as non configurable, non writable, enumerable, with value `json`", () => {
 			const apiRequest = new ApiRequest();
+			const descriptor = Object.getOwnPropertyDescriptor(apiRequest, "format");
 
-			expect(apiRequest.format).toBe("json");
+			expect(descriptor.configurable).toBe(false);
+			expect(descriptor.writable).toBe(false);
+			expect(descriptor.enumerable).toBe(true);
+			expect(descriptor.value).toBe("json");
 		});
 	});
 
-	describe("ApiRequest.set()", () => {
-		test("set self properties of properties argument", () => {
-			const property = "<name>";
-			const value = "<value>";
-			const properties = {};
+	describe("set()", () => {
+		test("set self properties of object paramater", () => {
 			const apiRequest = new ApiRequest();
+			const foo = {
+				"bar": "baz",
+				"qux": "quux"
+			};
 
-			properties[property] = value;
+			apiRequest.set(foo);
 
-			apiRequest.set(properties);
-
-			expect(apiRequest[property]).toBe(properties[property]);
+			for(const [key, value] of Object.entries(foo)) {
+				expect(apiRequest[key]).toBe(value);
+			}
 		});
 	});
 
-	describe("ApiRequest.sign()", () => {
+	describe("sign()", () => {
 		test("set self api_sig property to an md5 hash of all property names and values, excluding format and callback, ordered by `String.prototype.charCodeAt()` return value, and appended with a shared secret", () => {
-			const apiRequest = new ApiRequest()
-				.set({
-					"api_key": apiKey,
-					"method": apiMethod
-				});
-
-			const secret = "<secret>";
+			const apiRequest = new ApiRequest();
 			const paramsString = Object
 				.entries(apiRequest)
 				.filter(([name]) => name !== "format" && name !== "callback")
 				.sort(([a], [b]) => {
-					for(let i = 0; i <= a.length || i <= b.length; i++) {
+					for(let i = 0; i < a.length || i < b.length; i++) {
 						const charCodeA = a.charCodeAt(i) || 0;
 						const charCodeB = b.charCodeAt(i) || 0;
 
@@ -54,326 +51,150 @@ describe("ApiRequest", () => {
 						}
 					}
 				})
-				.map(param => param.join(""))
+				.flat()
 				.join("");
 
-			const hash = crypto
+			const secret = "foo";
+			const apiSig = crypto
 				.createHash("md5")
 				.update(paramsString + secret)
 				.digest("hex");
 
 			apiRequest.sign(secret);
 
-			expect(apiRequest.api_sig).toBe(hash);
-		});
-
-		test("include all property names, excluding format and callback", () => {
-			const param1 = "<value1>";
-			const param2 = "<value2>"
-			const apiRequest = new ApiRequest()
-				.set({
-					param1,
-					param2
-				});
-
-			const secret = "<secret>";
-			const paramsArray = Object.entries(apiRequest);
-
-			expect(paramsArray.find(([name]) => name === "param1")).not.toBeUndefined();
-			expect(paramsArray.find(([name]) => name === "param2")).not.toBeUndefined();
-
-			const paramsArrayFiltered = paramsArray.filter(([name]) => name !== "format" && name !== "callback");
-			
-			expect(paramsArrayFiltered.find(([name]) => name === "format")).toBeUndefined();
-			expect(paramsArrayFiltered.find(([name]) => name === "callback")).toBeUndefined();
-
-			const paramsArrayFilteredSorted = paramsArrayFiltered.sort(([a], [b]) => {
-				for(let i = 0; i <= a.length || i <= b.length; i++) {
-					const charCodeA = a.charCodeAt(i) || 0;
-					const charCodeB = b.charCodeAt(i) || 0;
-
-					if(charCodeA < charCodeB) {
-						return -1;
-					}
-
-					if(charCodeA > charCodeB) {
-						return 1;
-					}
-				}
-			});
-
-			const paramStringsArrayFilteredSorted = paramsArrayFilteredSorted.map(param => param.join(""));
-			const paramsStringFilteredSorted = paramStringsArrayFilteredSorted.join("");
-			const hash = crypto
-				.createHash("md5")
-				.update(paramsStringFilteredSorted + secret)
-				.digest("hex");
-
-			apiRequest.sign(secret);
-
-			expect(apiRequest.api_sig).toBe(hash);
-		});
-
-		test("order key value pairs by `String.prototype.charCodeAt()` return value", () => {
-			const param1 = "<value1>";
-			const param2 = "<value2>";
-			const param12 = "<value12>";
-			const param22 = "<value122>";
-			const param112 = "<value112>";
-			const apiRequest = new ApiRequest()
-				.set({
-					param2,
-					param112,
-					param22,
-					param1,
-					param12
-				});
-
-			const secret = "<secret>";
-			const paramsArray = Object.entries(apiRequest);
-			const paramsArrayFiltered = paramsArray.filter(([name]) => name !== "format" && name !== "callback");
-			const paramsArrayFilteredSorted = paramsArrayFiltered.sort(([a], [b]) => {
-				for(let i = 0; i <= a.length || i <= b.length; i++) {
-					const charCodeA = a.charCodeAt(i) || 0;
-					const charCodeB = b.charCodeAt(i) || 0;
-
-					if(charCodeA < charCodeB) {
-						return -1;
-					}
-
-					if(charCodeA > charCodeB) {
-						return 1;
-					}
-				}
-			});
-
-			expect(paramsArrayFilteredSorted[0][0]).toBe("param1");
-			expect(paramsArrayFilteredSorted[1][0]).toBe("param112");
-			expect(paramsArrayFilteredSorted[2][0]).toBe("param12");
-			expect(paramsArrayFilteredSorted[3][0]).toBe("param2");
-			expect(paramsArrayFilteredSorted[4][0]).toBe("param22");
-
-			const paramStringsArrayFilteredSorted = paramsArrayFilteredSorted.map(param => param.join(""));
-			const paramsStringFilteredSorted = paramStringsArrayFilteredSorted.join("");
-			const hash = crypto
-				.createHash("md5")
-				.update(paramsStringFilteredSorted + secret)
-				.digest("hex");
-
-			apiRequest.sign(secret);
-
-			expect(apiRequest.api_sig).toBe(hash);
+			expect(apiRequest.api_sig).toBe(apiSig);
 		});
 	});
 
-	describe("ApiRequest.send()", () => {
-		test("make a GET request and handle response with callback", done => {
+	describe("send()", () => {
+		test("make a GET request", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
+				.get("/2.0")
 				.query({ "format": "json" })
 				.reply(200, {});
-
-			apiRequest.send((err, data) => {
-				expect(err).toBeNull();
-				expect(data).not.toBeNull();
-				done();
-			});
+			
+			apiRequest
+				.send()
+				.then(data => {
+					expect(data).toBeDefined();
+					done();
+				});
 		});
 
-		test("make a GET request and handle response with promise", () => {
+		test("make a GET request with a callback paramater", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
+				.get("/2.0")
 				.query({ "format": "json" })
 				.reply(200, {});
-
-			return expect(apiRequest.send()).resolves.not.toBeNull();
+			
+			apiRequest
+				.send(data => {
+					expect(data).toBeDefined();
+					done();
+				});
 		});
 
-		test("make a POST request and handle response with callback", done => {
+		test("make a POST request", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.post("/2.0/", { "format": "json" })
+				.post("/2.0", { "format": "json" })
 				.reply(200, {});
 
-			apiRequest.send("POST", (err, data) => {
-				expect(err).toBeNull();
-				expect(data).not.toBeNull();
-				done();
-			});
+			apiRequest
+				.send("POST")
+				.then(data => {
+					expect(data).toBeDefined();
+					done();
+				});
 		});
 
-		test("make a POST request and handle response with promise", () => {
+		test("make a POST request with a callback paramater", done => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.post("/2.0/", { "format": "json" })
+				.post("/2.0", { "format": "json" })
 				.reply(200, {});
-
-			expect(apiRequest.send("POST")).resolves.not.toBeNull();
+			
+			apiRequest
+				.send(data => {
+					expect(data).toBeDefined();
+					done();
+				});
 		});
 
-		test("handle an error with callback", done => {
+		test("return a promise if no callback is passed", () => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
+				.get("/2.0")
 				.query({ "format": "json" })
-				.replyWithError("Error");
-
-			apiRequest.send((err, data) => {
-				expect(err).not.toBeNull();
-				expect(data).toBeNull();
-				done();
-			});
+				.reply(200, {});
+			
+			expect(apiRequest.send()).toBeInstanceOf(Promise);
 		});
 
-		test("handle an error with promise", () => {
+		test("return undefined if callback is passed", () => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
+				.get("/2.0")
 				.query({ "format": "json" })
-				.replyWithError("Error");
-
-			return expect(apiRequest.send()).rejects.toThrowError();
+				.reply(200, {});
+			
+			expect(apiRequest.send(() => {})).toBeUndefined();
 		});
 
-		test("when method is POST, send as POST and add own properties to body params", done => {
-			const apiRequest = new ApiRequest()
-				.set({
-					"api_key": apiKey,
-					"method": apiMethod
-				});
+		test("throw an error if the reply is an error", done => {
+			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.post("/2.0/", {
-					"api_key": apiRequest.api_key,
-					"format": apiRequest.format,
-					"method": apiRequest.method
-				})
-				.reply(200, {});
+				.get("/2.0")
+				.query({ "format": "json" })
+				.replyWithError();
 
-			apiRequest.send("POST", (err, data) => {
-				expect(err).toBeNull();
-				expect(data).not.toBeNull();
-				done();
-			});
+			apiRequest
+				.send()
+				.catch(err => {
+					expect(err).toBeInstanceOf(Error);
+					done();
+				});
 		});
 
-		test("when method is not POST, send as GET and add own properties to query params", done => {
-			const apiRequest = new ApiRequest()
-				.set({
-					"api_key": apiKey,
-					"method": apiMethod
-				});
+		test("throw an error if the reply is not JSON", done => {
+			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
-				.query({
-					"api_key": apiRequest.api_key,
-					"format": apiRequest.format,
-					"method": apiRequest.method
-				})
-				.reply(200, {});
-
-			apiRequest.send((err, data) => {
-				expect(err).toBeNull();
-				expect(data).not.toBeNull();
-				done();
-			});
+				.get("/2.0")
+				.query({ "format": "json" })
+				.reply(200);
+			
+			apiRequest
+				.send()
+				.catch(err => {
+					expect(err).toBeInstanceOf(Error);
+					done();
+				});
 		});
 
-		test("when callback is passed as first paramater return undefined", () => {
-			const apiRequest = new ApiRequest()
-				.set({
-					"api_key": apiKey,
-					"method": apiMethod
-				});
+		test("throw an error if the reply contains error property", done => {
+			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
-				.query({
-					"api_key": apiRequest.api_key,
-					"format": apiRequest.format,
-					"method": apiRequest.method
-				})
-				.reply(200, {});
+				.get("/2.0")
+				.query({ "format": "json" })
+				.reply(200, { error: "You've met with a terrible fate, haven't you?" });
 
-			const apiResponse = apiRequest.send(() => {
-				// Do nothing
-			});
-
-			expect(apiResponse).toBeUndefined();
-		});
-
-		test("when callback is passed as second paramater return undefined", () => {
-			const apiRequest = new ApiRequest()
-				.set({
-					"api_key": apiKey,
-					"method": apiMethod
+			apiRequest
+				.send()
+				.catch(err => {
+					expect(err).toBeInstanceOf(Error);
+					done();
 				});
-
-			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
-				.query({
-					"api_key": apiRequest.api_key,
-					"format": apiRequest.format,
-					"method": apiRequest.method
-				})
-				.reply(200, {});
-
-			const apiResponse = apiRequest.send("GET", () => {
-				// Do nothing
-			});
-
-			expect(apiResponse).toBeUndefined();
-		});
-
-		test("when callback is not passed as either first or second paramater, return promise", () => {
-			const apiRequest = new ApiRequest()
-				.set({
-					"api_key": apiKey,
-					"method": apiMethod
-				});
-
-			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
-				.query({
-					"api_key": apiRequest.api_key,
-					"format": apiRequest.format,
-					"method": apiRequest.method
-				})
-				.reply(200, {});
-
-			const apiResponse = apiRequest.send();
-
-			expect(apiResponse).toBeInstanceOf(Promise);
-		});
-
-		test("when callback is not passed as second paramater, return promise", () => {
-			const apiRequest = new ApiRequest()
-				.set({
-					"api_key": apiKey,
-					"method": apiMethod
-				});
-
-			nock("http://ws.audioscrobbler.com")
-				.get("/2.0/")
-				.query({
-					"api_key": apiRequest.api_key,
-					"format": apiRequest.format,
-					"method": apiRequest.method
-				})
-				.reply(200, {});
-
-			const apiResponse = apiRequest.send("GET", null);
-
-			expect(apiResponse).toBeInstanceOf(Promise);
 		});
 	});
 });
