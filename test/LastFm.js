@@ -63,7 +63,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.*/,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "album.addTags",
 				"sk": sessionKey
@@ -124,7 +124,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "album.removeTag",
 				"sk": sessionKey
@@ -155,7 +155,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "artist.addTags",
 				"sk": sessionKey
@@ -276,7 +276,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "artist.removeTag",
 				"sk": sessionKey
@@ -307,7 +307,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "auth.getMobileSession"
 			})
@@ -323,7 +323,7 @@ describe("LastFm()", () => {
 			.get("/2.0")
 			.query({
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "auth.getSession"
 			})
@@ -339,7 +339,7 @@ describe("LastFm()", () => {
 			.get("/2.0")
 			.query({
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "auth.getToken"
 			})
@@ -557,7 +557,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "track.addTags",
 				"sk": sessionKey
@@ -648,7 +648,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "track.love",
 				"sk": sessionKey
@@ -664,7 +664,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "track.removeTag",
 				"sk": sessionKey
@@ -680,7 +680,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "track.scrobble",
 				"sk": sessionKey
@@ -696,7 +696,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "track.scrobble",
 				"sk": sessionKey
@@ -777,7 +777,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "track.unlove",
 				"sk": sessionKey
@@ -793,7 +793,7 @@ describe("LastFm()", () => {
 		nock("http://ws.audioscrobbler.com")
 			.post("/2.0", {
 				"api_key": apiKey,
-				"api_sig": /.+/u,
+				"api_sig": /.*/u,
 				"format": "json",
 				"method": "track.updateNowPlaying",
 				"sk": sessionKey
