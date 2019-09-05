@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const nock = require("nock");
 const ApiRequest = require("../lib/ApiRequest");
 
-describe("ApiRequest()", () => {
+describe("ApiRequest", () => {
 	describe("constructor()", () => {
 		test("define `format` property as non configurable, non writable, enumerable, with value `json`", () => {
 			const apiRequest = new ApiRequest();
@@ -25,9 +25,7 @@ describe("ApiRequest()", () => {
 
 			apiRequest.set(props);
 
-			for(const [key, value] of Object.entries(props)) {
-				expect(apiRequest[key]).toBe(value);
-			}
+			expect(apiRequest).toMatchObject(props);
 		});
 	});
 
@@ -75,106 +73,106 @@ describe("ApiRequest()", () => {
 	});
 
 	describe("send()", () => {
-		test("make a GET request when \"POST\" is not passed as the first argument", done => {
+		test("make a GET request if \"POST\" is not passed as the first argument", () => {
 			const apiRequest = new ApiRequest();
-
-			nock("http://ws.audioscrobbler.com")
+			const scope = nock("http://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ "format": "json" })
 				.reply(200, {});
 
-			apiRequest
+			return apiRequest
 				.send()
-				.then(data => {
-					expect(data).toBeDefined();
-					done();
-				});
+				.finally(() => expect(scope.isDone()).toBe(true));
 		});
 
-		test("make a POST request when \"POST\" is passed as the first argument", done => {
+		test("make a POST request if \"POST\" is passed as the first argument", () => {
 			const apiRequest = new ApiRequest();
-
-			nock("http://ws.audioscrobbler.com")
+			const scope = nock("http://ws.audioscrobbler.com")
 				.post("/2.0", { "format": "json" })
 				.reply(200, {});
 
-			apiRequest
+			return apiRequest
 				.send("POST")
-				.then(data => {
-					expect(data).toBeDefined();
-					done();
-				});
+				.finally(() => expect(scope.isDone()).toBe(true));
 		});
 
-		test("invoke callback if function is passed as the first argument and no second argument is passed", done => {
+		test("return promise if function is not passed as the first argument and no second argument is passed, and resolves with the API response", () => {
 			const apiRequest = new ApiRequest();
+			const reply = {};
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ "format": "json" })
-				.reply(200, {});
+				.reply(200, reply);
+
+			const apiResponse = apiRequest.send("GET");
+
+			expect(apiResponse).toBeInstanceOf(Promise);
+
+			return expect(apiResponse).resolves.toStrictEqual(reply);
+		});
+
+		test("return promise if function is not passed as the second argument, and resolves with the API response", () => {
+			const apiRequest = new ApiRequest();
+			const reply = {};
+
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0")
+				.query({ "format": "json" })
+				.reply(200, reply);
+
+			const apiResponse = apiRequest.send("GET", "GOT");
+
+			expect(apiResponse).toBeInstanceOf(Promise);
+
+			return expect(apiResponse).resolves.toStrictEqual(reply);
+		});
+
+		test("invoke callback if function is passed as the first argument and no second argument is passed, passing `null` and the response as the `err` and `data` paramaters respectively", done => {
+			const apiRequest = new ApiRequest();
+			const reply = {};
+
+			nock("http://ws.audioscrobbler.com")
+				.get("/2.0")
+				.query({ "format": "json" })
+				.reply(200, reply);
 
 			apiRequest.send((err, data) => {
 				expect(err).toBeNull();
-				expect(data).toBeDefined();
+				expect(data).toStrictEqual(reply);
 				done();
 			});
 		});
 
-		test("invoke callback if function is passed as the second argument", done => {
+		test("invoke callback if function is passed as the second argument, passing `null` and the response as the `err` and `data` paramaters respectively", done => {
 			const apiRequest = new ApiRequest();
+			const reply = {};
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ "format": "json" })
-				.reply(200, {});
+				.reply(200, reply);
 
 			apiRequest.send("GET", (err, data) => {
 				expect(err).toBeNull();
-				expect(data).toBeDefined();
+				expect(data).toStrictEqual(reply);
 				done();
 			});
 		});
 
-		test("return promise if function is not passed as the first argument and no second argument is passed", () => {
+		test("throw an error if the reply is an error", () => {
 			const apiRequest = new ApiRequest();
+			const reply = new Error();
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ "format": "json" })
-				.reply(200, {});
+				.replyWithError(reply);
 
-			expect(apiRequest.send("GET")).toBeInstanceOf(Promise);
+			return expect(apiRequest.send()).rejects.toStrictEqual(reply);
 		});
 
-		test("return promise if function is not passed as the second argument", () => {
-			const apiRequest = new ApiRequest();
-
-			nock("http://ws.audioscrobbler.com")
-				.get("/2.0")
-				.query({ "format": "json" })
-				.reply(200, {});
-
-			expect(apiRequest.send("GET", "GOT")).toBeInstanceOf(Promise);
-		});
-
-		test("throw an error if the reply is an error", done => {
-			const apiRequest = new ApiRequest();
-
-			nock("http://ws.audioscrobbler.com")
-				.get("/2.0")
-				.query({ "format": "json" })
-				.replyWithError({});
-
-			apiRequest
-				.send()
-				.catch(err => {
-					expect(err).toBeDefined();
-					done();
-				});
-		});
-
-		test("throw an error if the reply is not JSON", done => {
+		test("throw an error if the reply is not JSON", () => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -182,15 +180,10 @@ describe("ApiRequest()", () => {
 				.query({ "format": "json" })
 				.reply(200);
 
-			apiRequest
-				.send()
-				.catch(err => {
-					expect(err).toBeDefined();
-					done();
-				});
+			return expect(apiRequest.send()).rejects.toBeInstanceOf(Error);
 		});
 
-		test("throw an error if the reply contains error property", done => {
+		test("throw an error if the reply contains error property", () => {
 			const apiRequest = new ApiRequest();
 
 			nock("http://ws.audioscrobbler.com")
@@ -198,24 +191,20 @@ describe("ApiRequest()", () => {
 				.query({ "format": "json" })
 				.reply(200, { error: "You've met with a terrible fate, haven't you?" });
 
-			apiRequest
-				.send()
-				.catch(err => {
-					expect(err).toBeDefined();
-					done();
-				});
+			return expect(apiRequest.send()).rejects.toBeInstanceOf(Error);
 		});
 
 		test("handle an error with a callback", done => {
 			const apiRequest = new ApiRequest();
+			const reply = new Error();
 
 			nock("http://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ "format": "json" })
-				.replyWithError({});
+				.replyWithError(reply);
 
 			apiRequest.send((err, data) => {
-				expect(err).toBeDefined();
+				expect(err).toStrictEqual(reply);
 				expect(data).toBeNull();
 				done();
 			});
