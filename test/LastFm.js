@@ -1,8 +1,24 @@
-const nock = require("nock");
+const ApiRequest = require("../lib/ApiRequest");
 const LastFm = require("../lib/LastFm");
 const apiKey = "<apiKey>";
 const secret = "<secret>";
 const sessionKey = "<sessionKey>";
+const mockSet = jest.fn().mockReturnThis();
+const mockSign = jest.fn().mockReturnThis();
+const mockSend = jest.fn();
+
+jest.mock("../lib/ApiRequest", () => jest.fn().mockImplementation(() => ({
+	set: mockSet,
+	sign: mockSign,
+	send: mockSend
+})));
+
+beforeEach(() => {
+	ApiRequest.mockClear();
+	mockSet.mockClear();
+	mockSign.mockClear();
+	mockSend.mockClear();
+});
 
 describe("LastFm()", () => {
 	describe("constructor()", () => {
@@ -57,959 +73,4093 @@ describe("LastFm()", () => {
 		});
 	});
 
-	test("add tags to an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("albumAddTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "album.addTags",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.albumAddTags({});
 
-		lastFm.albumAddTags().then(() => done());
-	});
+			expect(ApiRequest).toHaveBeenCalled();
+		});
 
-	test("get info of an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "album.getInfo"
-			})
-			.reply(200, {});
+			lastFm.albumAddTags({});
 
-		lastFm.albumGetInfo().then(() => done());
-	});
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
 
-	test("get tags of an album added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "album.getTags"
-			})
-			.reply(200, {});
+			lastFm.albumAddTags(params);
 
-		lastFm.albumGetTags().then(() => done());
-	});
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
 
-	test("get top tags of an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"album.addTags\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "album.getTopTags"
-			})
-			.reply(200, {});
+			lastFm.albumAddTags({});
 
-		lastFm.albumGetTopTags().then(() => done());
-	});
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "album.addTags",
+				sk: lastFm.sessionKey
+			});
+		});
 
-	test("remove tag from an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "album.removeTag",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.albumAddTags({});
 
-		lastFm.albumRemoveTag().then(() => done());
-	});
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
 
-	test("search for an album", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "album.search"
-			})
-			.reply(200, {});
+			lastFm.albumAddTags({}, callback);
 
-		lastFm.albumSearch().then(() => done());
-	});
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
 
-	test("add tags to an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "artist.addTags",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			mockSend.mockReturnValueOnce(rA);
 
-		lastFm.artistAddTags().then(() => done());
-	});
+			const rB = lastFm.albumAddTags({});
 
-	test("get correction of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.getCorrection"
-			})
-			.reply(200, {});
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.albumAddTags({});
 
-		lastFm.artistGetCorrection().then(() => done());
-	});
-
-	test("get info of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.getInfo"
-			})
-			.reply(200, {});
-
-		lastFm.artistGetInfo().then(() => done());
-	});
-
-	test("get similar to an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.getSimilar"
-			})
-			.reply(200, {});
-
-		lastFm.artistGetSimilar().then(() => done());
-	});
-
-	test("get tags of an artist added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.getTags"
-			})
-			.reply(200, {});
-
-		lastFm.artistGetTags().then(() => done());
-	});
-
-	test("get top albums of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.getTopAlbums"
-			})
-			.reply(200, {});
-
-		lastFm.artistGetTopAlbums().then(() => done());
-	});
-
-	test("get top tags of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.getTopTags"
-			})
-			.reply(200, {});
-
-		lastFm.artistGetTopTags().then(() => done());
-	});
-
-	test("get top tracks of an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.getTopTracks"
-			})
-			.reply(200, {});
-
-		lastFm.artistGetTopTracks().then(() => done());
-	});
-
-	test("remove tag from an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "artist.removeTag",
-				"sk": sessionKey
-			})
-			.reply(200, {});
-
-		lastFm.artistRemoveTag().then(() => done());
-	});
-
-	test("search for an artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "artist.search"
-			})
-			.reply(200, {});
-
-		lastFm.artistSearch().then(() => done());
-	});
-
-	test("get a session key for an account", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "auth.getMobileSession"
-			})
-			.reply(200, {});
-
-		lastFm.authGetMobileSession().then(() => done());
-	});
-
-	test("get a session key for an account", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "auth.getSession"
-			})
-			.reply(200, {});
-
-		lastFm.authGetSession().then(() => done());
-	});
-
-	test("get a token", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "auth.getToken"
-			})
-			.reply(200, {});
-
-		lastFm.authGetToken((err, data) => {
-			expect(err).toBeNull();
-			expect(data).toEqual({});
-			done();
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
 		});
 	});
 
-	test("get the top artists chart", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("albumGetInfo()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "chart.getTopArtists"
-			})
-			.reply(200, {});
+			lastFm.albumGetInfo({});
 
-		lastFm.chartGetTopArtists().then(() => done());
-	});
+			expect(ApiRequest).toHaveBeenCalled();
+		});
 
-	test("get the top tags chart", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "chart.getTopTags"
-			})
-			.reply(200, {});
+			lastFm.albumGetInfo({});
 
-		lastFm.chartGetTopTags().then(() => done());
-	});
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
 
-	test("get the top tracks chart", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "chart.getTopTracks"
-			})
-			.reply(200, {});
+			lastFm.albumGetInfo(params);
 
-		lastFm.chartGetTopTracks().then(() => done());
-	});
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
 
-	test("get top artists of a country", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getInfo\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "geo.getTopArtists"
-			})
-			.reply(200, {});
+			lastFm.albumGetInfo({});
 
-		lastFm.geoGetTopArtists().then(() => done());
-	});
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "album.getInfo"
+			});
+		});
 
-	test("get top tracks of a country", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "geo.getTopTracks"
-			})
-			.reply(200, {});
+			lastFm.albumGetInfo({}, callback);
 
-		lastFm.geoGetTopTracks().then(() => done());
-	});
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
 
-	test("get artists in library of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "library.getArtists"
-			})
-			.reply(200, {});
+			mockSend.mockReturnValueOnce(rA);
 
-		lastFm.libraryGetArtists().then(() => done());
-	});
+			const rB = lastFm.albumGetInfo({});
 
-	test("get info of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "tag.getInfo"
-			})
-			.reply(200, {});
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.albumGetInfo({});
 
-		lastFm.tagGetInfo().then(() => done());
-	});
-
-	test("get similar to a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "tag.getSimilar"
-			})
-			.reply(200, {});
-
-		lastFm.tagGetSimilar().then(() => done());
-	});
-
-	test("get top albums of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "tag.getTopAlbums"
-			})
-			.reply(200, {});
-
-		lastFm.tagGetTopAlbums().then(() => done());
-	});
-
-	test("get top artists of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "tag.getTopArtists"
-			})
-			.reply(200, {});
-
-		lastFm.tagGetTopArtists().then(() => done());
-	});
-
-	test("get top tags", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
-
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "tag.getTopTags"
-			})
-			.reply(200, {});
-
-		lastFm.tagGetTopTags((err, data) => {
-			expect(err).toBeNull();
-			expect(data).toEqual({});
-			done();
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
 		});
 	});
 
-	test("get top tracks of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("albumGetTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "tag.getTopTracks"
-			})
-			.reply(200, {});
+			lastFm.albumGetTags({});
 
-		lastFm.tagGetTopTracks().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumGetTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.albumGetTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumGetTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "album.getTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.albumGetTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.albumGetTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.albumGetTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get weekly charts of a tag", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("albumGetTopTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "tag.getWeeklyChartList"
-			})
-			.reply(200, {});
+			lastFm.albumGetTopTags({});
 
-		lastFm.tagGetWeeklyChartList().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumGetTopTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.albumGetTopTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getTopTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumGetTopTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "album.getTopTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.albumGetTopTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.albumGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.albumGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("add tags to a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("albumRemoveTag()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "track.addTags",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.albumRemoveTag({});
 
-		lastFm.trackAddTags().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumRemoveTag({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.albumRemoveTag(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"album.removeTag\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumRemoveTag({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "album.removeTag",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumRemoveTag({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.albumRemoveTag({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.albumRemoveTag({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.albumRemoveTag({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get correction of a track and artist", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("albumSearch()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "track.getCorrection"
-			})
-			.reply(200, {});
+			lastFm.albumSearch({});
 
-		lastFm.trackGetCorrection().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumSearch({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.albumSearch(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.search\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.albumSearch({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "album.search"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.albumSearch({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.albumSearch({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.albumSearch({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get info of a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistAddTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "track.getInfo"
-			})
-			.reply(200, {});
+			lastFm.artistAddTags({});
 
-		lastFm.trackGetInfo().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistAddTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistAddTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"artist.addTags\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistAddTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.addTags",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistAddTags({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistAddTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistAddTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistAddTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get similar to a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistGetCorrection()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "track.getSimilar"
-			})
-			.reply(200, {});
+			lastFm.artistGetCorrection({});
 
-		lastFm.trackGetSimilar().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetCorrection({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistGetCorrection(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getCorrection\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetCorrection({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.getCorrection"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistGetCorrection({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistGetCorrection({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistGetCorrection({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get tags of a track added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistGetInfo()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "track.getTags"
-			})
-			.reply(200, {});
+			lastFm.artistGetInfo({});
 
-		lastFm.trackGetTags().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetInfo({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistGetInfo(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getInfo\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetInfo({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.getInfo"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistGetInfo({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get top tags of a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistGetSimilar()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "track.getTopTags"
-			})
-			.reply(200, {});
+			lastFm.artistGetSimilar({});
 
-		lastFm.trackGetTopTags().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetSimilar({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistGetSimilar(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getSimilar\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetSimilar({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.getSimilar"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistGetSimilar({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistGetSimilar({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistGetSimilar({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("love a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistGetTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "track.love",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.artistGetTags({});
 
-		lastFm.trackLove().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistGetTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.getTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistGetTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistGetTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistGetTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("remove tag from a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistGetTopAlbums()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "track.removeTag",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.artistGetTopAlbums({});
 
-		lastFm.trackRemoveTag().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTopAlbums({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistGetTopAlbums(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopAlbums\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTopAlbums({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.getTopAlbums"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistGetTopAlbums({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistGetTopAlbums({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistGetTopAlbums({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("scrobble a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistGetTopTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "track.scrobble",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.artistGetTopTags({});
 
-		lastFm.trackScrobble().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTopTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistGetTopTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTopTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.getTopTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistGetTopTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("scrobble many tracks", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("artistGetTopTracks()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "track.scrobble",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.artistGetTopTracks({});
 
-		lastFm.trackScrobbleMany([], (err, data) => {
-			expect(err).toBeNull();
-			expect(data).toEqual({});
-			done();
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTopTracks({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistGetTopTracks(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopTracks\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistGetTopTracks({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.getTopTracks"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistGetTopTracks({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("artistRemoveTag()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistRemoveTag({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistRemoveTag({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistRemoveTag(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"artist.removeTag\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistRemoveTag({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.removeTag",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistRemoveTag({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistRemoveTag({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistRemoveTag({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistRemoveTag({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("artistSearch()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistSearch({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistSearch({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.artistSearch(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.search\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.artistSearch({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "artist.search"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.artistSearch({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.artistSearch({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.artistSearch({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("authGetMobileSession()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetMobileSession({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetMobileSession({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.authGetMobileSession(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getMobileSession\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetMobileSession({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "auth.getMobileSession"
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetMobileSession({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.authGetMobileSession({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.authGetMobileSession({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.authGetMobileSession({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("authGetSession()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetSession({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetSession({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.authGetSession(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getSession\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetSession({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "auth.getSession"
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetSession({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.authGetSession({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.authGetSession({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.authGetSession({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("authGetToken()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetToken();
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set(), passing object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getToken\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetToken();
+
+			expect(mockSet.mock.calls[0][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "auth.getToken"
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.authGetToken();
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.authGetToken(callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.authGetToken();
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.authGetToken();
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("chartGetTopArtists()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopArtists({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopArtists({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.chartGetTopArtists(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopArtists\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopArtists({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "chart.getTopArtists"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.chartGetTopArtists({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.chartGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.chartGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("chartGetTopTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopTags({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.chartGetTopTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "chart.getTopTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.chartGetTopTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.chartGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.chartGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("chartGetTopTracks()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopTracks({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopTracks({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.chartGetTopTracks(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopTracks\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.chartGetTopTracks({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "chart.getTopTracks"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.chartGetTopTracks({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.chartGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.chartGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("geoGetTopArtists()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.geoGetTopArtists({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.geoGetTopArtists({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.geoGetTopArtists(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"geo.getTopArtists\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.geoGetTopArtists({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "geo.getTopArtists"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.geoGetTopArtists({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.geoGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.geoGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("geoGetTopTracks()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.geoGetTopTracks({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.geoGetTopTracks({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.geoGetTopTracks(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"geo.getTopTracks\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.geoGetTopTracks({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "geo.getTopTracks"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.geoGetTopTracks({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.geoGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.geoGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("libraryGetArtists()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.libraryGetArtists({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.libraryGetArtists({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.libraryGetArtists(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"library.getArtists\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.libraryGetArtists({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "library.getArtists"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.libraryGetArtists({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.libraryGetArtists({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.libraryGetArtists({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("tagGetInfo()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetInfo({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetInfo({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.tagGetInfo(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getInfo\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetInfo({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "tag.getInfo"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.tagGetInfo({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.tagGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.tagGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("tagGetSimilar()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetSimilar({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetSimilar({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.tagGetSimilar(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getSimilar\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetSimilar({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "tag.getSimilar"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.tagGetSimilar({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.tagGetSimilar({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.tagGetSimilar({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("tagGetTopAlbums()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopAlbums({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopAlbums({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.tagGetTopAlbums(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopAlbums\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopAlbums({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "tag.getTopAlbums"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.tagGetTopAlbums({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.tagGetTopAlbums({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.tagGetTopAlbums({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("tagGetTopArtists()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopArtists({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopArtists({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.tagGetTopArtists(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopArtists\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopArtists({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "tag.getTopArtists"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.tagGetTopArtists({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.tagGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.tagGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("tagGetTopTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopTags({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set(), passing object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopTags({});
+
+			expect(mockSet.mock.calls[0][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "tag.getTopTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.tagGetTopTags(callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.tagGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.tagGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("tagGetTopTracks()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopTracks({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopTracks({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.tagGetTopTracks(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopTracks\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetTopTracks({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "tag.getTopTracks"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.tagGetTopTracks({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.tagGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.tagGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("tagGetWeeklyChartList()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetWeeklyChartList({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetWeeklyChartList({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.tagGetWeeklyChartList(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getWeeklyChartList\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.tagGetWeeklyChartList({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "tag.getWeeklyChartList"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.tagGetWeeklyChartList({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.tagGetWeeklyChartList({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.tagGetWeeklyChartList({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackAddTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackAddTags({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackAddTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackAddTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.addTags\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackAddTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.addTags",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackAddTags({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackAddTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackAddTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackAddTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackGetCorrection()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetCorrection({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetCorrection({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackGetCorrection(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getCorrection\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetCorrection({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.getCorrection"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackGetCorrection({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackGetCorrection({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackGetCorrection({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackGetInfo()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetInfo({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetInfo({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackGetInfo(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getInfo\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetInfo({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.getInfo"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackGetInfo({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackGetSimilar()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetSimilar({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetSimilar({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackGetSimilar(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getSimilar\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetSimilar({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.getSimilar"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackGetSimilar({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackGetSimilar({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackGetSimilar({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackGetTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetTags({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackGetTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.getTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackGetTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackGetTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackGetTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackGetTopTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetTopTags({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetTopTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackGetTopTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getTopTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackGetTopTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.getTopTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackGetTopTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackLove()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackLove({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackLove({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackLove(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.love\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackLove({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.love",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackLove({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackLove({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackLove({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackLove({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackRemoveTag()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackRemoveTag({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackRemoveTag({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackRemoveTag(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.removeTag\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackRemoveTag({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.removeTag",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackRemoveTag({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackRemoveTag({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackRemoveTag({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackRemoveTag({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
+	describe("trackScrobble()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackScrobble({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackScrobble({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackScrobble(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.scrobble\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackScrobble({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.scrobble",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackScrobble({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackScrobble({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackScrobble({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackScrobble({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
 		});
 	});
 
 	describe("trackScrobbleMany()", () => {
-		test("concatenate params array into single object, using array notation to distinguish each set of params, and call LastFm.trackScrobble() with that as the first argument", done => {
+		test("call LastFm.trackScrobble(), passing object as first paramater, which is the result of mapping the keys and values of the objects in the paramsArr argument, appending [<index>] to the key to note the index of the source object in the array", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
-			const spy = jest.spyOn(lastFm, "trackScrobble");
-			const params = [{ "param": "<value>" }, { "param": "<value>" }];
+			const spyTrackScrobble = jest.spyOn(lastFm, "trackScrobble");
+			const paramsArr = [
+				{
+					foo: "bar",
+					bar: "baz"
+				},
+				{
+					qux: "quux",
+					corge: "grault"
+				}
+			];
 
-			nock("http://ws.audioscrobbler.com")
-				.post("/2.0")
-				.reply(200, {});
+			const params = Object.fromEntries(paramsArr.flatMap((paramsObj, i) => Object
+				.entries(paramsObj)
+				.map(([name, value]) => [`${name}[${i}]`, value])
+			));
 
-			lastFm.trackScrobbleMany(params, (err, data) => {
-				expect(err).toBeNull();
-				expect(data).toEqual({});
-				expect(spy).toBeCalledTimes(1);
+			lastFm.trackScrobbleMany(paramsArr);
 
-				const [firstCallArgs] = spy.mock.calls;
-				const [firstCallFirstArg] = firstCallArgs;
-
-				expect(JSON.stringify(firstCallFirstArg)).toBe("{\"param[1]\":\"<value>\",\"param[0]\":\"<value>\"}");
-				done();
-			});
-		});
-
-		test("if called with one params object, call LastFm.trackScrobble() with that as the first argument", done => {
-			const lastFm = new LastFm(apiKey, secret, sessionKey);
-			const spy = jest.spyOn(lastFm, "trackScrobble");
-			const params = [{ "param": "<value>" }];
-
-			nock("http://ws.audioscrobbler.com")
-				.post("/2.0")
-				.reply(200, {});
-
-			lastFm.trackScrobbleMany(params, (err, data) => {
-				expect(err).toBeNull();
-				expect(data).toEqual({});
-				expect(spy).toBeCalledTimes(1);
-
-				const [firstCallArgs] = spy.mock.calls;
-				const [firstCallFirstArg] = firstCallArgs;
-
-				expect(JSON.stringify(firstCallFirstArg)).toBe("{\"param\":\"<value>\"}");
-				done();
-			});
+			expect(spyTrackScrobble.mock.calls[0][0]).toStrictEqual(params);
 		});
 	});
 
-	test("search for a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("trackSearch()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "track.search"
-			})
-			.reply(200, {});
+			lastFm.trackSearch({});
 
-		lastFm.trackSearch().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackSearch({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackSearch(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.search\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackSearch({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.search"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackSearch({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackSearch({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackSearch({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("unlove a track", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("trackUnlove()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "track.unlove",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.trackUnlove({});
 
-		lastFm.trackUnlove().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackUnlove({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackUnlove(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.unlove\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackUnlove({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.unlove",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackUnlove({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackUnlove({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackUnlove({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackUnlove({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("update now playing", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("trackUpdateNowPlaying()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.post("/2.0", {
-				"api_key": apiKey,
-				"api_sig": /.*/u,
-				"format": "json",
-				"method": "track.updateNowPlaying",
-				"sk": sessionKey
-			})
-			.reply(200, {});
+			lastFm.trackUpdateNowPlaying({});
 
-		lastFm.trackUpdateNowPlaying().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackUpdateNowPlaying({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.trackUpdateNowPlaying(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.updateNowPlaying\", and \"lastFn.sessionKey\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackUpdateNowPlaying({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "track.updateNowPlaying",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.trackUpdateNowPlaying({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.trackUpdateNowPlaying({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.trackUpdateNowPlaying({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.trackUpdateNowPlaying({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get tracks of an artist scrobbled by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetFriends()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getArtistTracks"
-			})
-			.reply(200, {});
+			lastFm.userGetFriends({});
 
-		lastFm.userGetArtistTracks().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetFriends({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetFriends(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getFriends\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetFriends({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getFriends"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetFriends({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetFriends({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetFriends({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get friends of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetInfo()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getFriends"
-			})
-			.reply(200, {});
+			lastFm.userGetInfo({});
 
-		lastFm.userGetFriends().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfo({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetInfo(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getInfo\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfo({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getInfo"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetInfo({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetInfo({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get info of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetLovedTracks()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getInfo"
-			})
-			.reply(200, {});
+			lastFm.userGetLovedTracks({});
 
-		lastFm.userGetInfo().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetLovedTracks({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetLovedTracks(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getLovedTracks\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetLovedTracks({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getLovedTracks"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetLovedTracks({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetLovedTracks({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetLovedTracks({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get loved tracks of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetPersonalTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getLovedTracks"
-			})
-			.reply(200, {});
+			lastFm.userGetPersonalTags({});
 
-		lastFm.userGetLovedTracks().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetPersonalTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetPersonalTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getPersonalTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetPersonalTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getPersonalTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetPersonalTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetPersonalTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetPersonalTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get items of a tag added by a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetRecentTracks()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getPersonalTags"
-			})
-			.reply(200, {});
+			lastFm.userGetRecentTracks({});
 
-		lastFm.userGetPersonalTags().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetRecentTracks({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetRecentTracks(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getRecentTracks\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetRecentTracks({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getRecentTracks"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetRecentTracks({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetRecentTracks({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetRecentTracks({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get recent tracks of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetTopAlbums()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getRecentTracks"
-			})
-			.reply(200, {});
+			lastFm.userGetTopAlbums({});
 
-		lastFm.userGetRecentTracks().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopAlbums({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetTopAlbums(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopAlbums\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopAlbums({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getTopAlbums"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetTopAlbums({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetTopAlbums({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetTopAlbums({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get top albums of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetTopArtists()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getTopAlbums"
-			})
-			.reply(200, {});
+			lastFm.userGetTopArtists({});
 
-		lastFm.userGetTopAlbums().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopArtists({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetTopArtists(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopArtists\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopArtists({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getTopArtists"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetTopArtists({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetTopArtists({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get top artists of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetTopTags()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getTopArtists"
-			})
-			.reply(200, {});
+			lastFm.userGetTopTags({});
 
-		lastFm.userGetTopArtists().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopTags({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetTopTags(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopTags\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopTags({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getTopTags"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetTopTags({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetTopTags({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get top tags of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetTopTracks()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getTopTags"
-			})
-			.reply(200, {});
+			lastFm.userGetTopTracks({});
 
-		lastFm.userGetTopTags().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopTracks({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetTopTracks(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopTracks\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetTopTracks({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getTopTracks"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetTopTracks({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetTopTracks({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get top tracks of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetWeeklyAlbumChart()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getTopTracks"
-			})
-			.reply(200, {});
+			lastFm.userGetWeeklyAlbumChart({});
 
-		lastFm.userGetTopTracks().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetWeeklyAlbumChart({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetWeeklyAlbumChart(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyAlbumChart\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetWeeklyAlbumChart({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getWeeklyAlbumChart"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetWeeklyAlbumChart({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetWeeklyAlbumChart({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetWeeklyAlbumChart({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get weekly album chart of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetWeeklyArtistChart()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getWeeklyAlbumChart"
-			})
-			.reply(200, {});
+			lastFm.userGetWeeklyArtistChart({});
 
-		lastFm.userGetWeeklyAlbumChart().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetWeeklyArtistChart({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetWeeklyArtistChart(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyArtistChart\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetWeeklyArtistChart({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getWeeklyArtistChart"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetWeeklyArtistChart({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetWeeklyArtistChart({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetWeeklyArtistChart({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get weekly artist chart of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetWeeklyChartList()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getWeeklyArtistChart"
-			})
-			.reply(200, {});
+			lastFm.userGetWeeklyChartList({});
 
-		lastFm.userGetWeeklyArtistChart().then(() => done());
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetWeeklyChartList({});
+
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetWeeklyChartList(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyChartList\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetWeeklyChartList({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getWeeklyChartList"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetWeeklyChartList({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetWeeklyChartList({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetWeeklyChartList({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 
-	test("get weekly charts of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+	describe("userGetWeeklyTrackChart()", () => {
+		test("create a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getWeeklyChartList"
-			})
-			.reply(200, {});
+			lastFm.userGetWeeklyTrackChart({});
 
-		lastFm.userGetWeeklyChartList().then(() => done());
-	});
+			expect(ApiRequest).toHaveBeenCalled();
+		});
 
-	test("get weekly track chart of a user", done => {
-		const lastFm = new LastFm(apiKey, secret, sessionKey);
+		test("call ApiRequest.set() twice", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-		nock("http://ws.audioscrobbler.com")
-			.get("/2.0")
-			.query({
-				"api_key": apiKey,
-				"format": "json",
-				"method": "user.getWeeklyTrackChart"
-			})
-			.reply(200, {});
+			lastFm.userGetWeeklyTrackChart({});
 
-		lastFm.userGetWeeklyTrackChart().then(() => done());
+			expect(mockSet).toHaveBeenCalledTimes(2);
+		});
+
+		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const params = {
+				foo: "bar",
+				baz: "qux"
+			};
+
+			lastFm.userGetWeeklyTrackChart(params);
+
+			expect(mockSet).toHaveBeenNthCalledWith(1, params);
+		});
+
+		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyTrackChart\" respectively", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetWeeklyTrackChart({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getWeeklyTrackChart"
+			});
+		});
+
+		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetWeeklyTrackChart({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		test("return what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetWeeklyTrackChart({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		test("return self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetWeeklyTrackChart({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
 	});
 });
