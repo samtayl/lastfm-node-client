@@ -18,27 +18,26 @@ See the [Last.Fm API web page](https://www.last.fm/api) for information about th
 $ npm install lastfm-node-client
 ```
 
-Node.js **7.0.0** or later is required.
+Node.js **8.10.0** or later is required.
 
 ## Usage
 
-First, you must instantiate the LastFm Class with an object parameter containing the details of your API account. `apiKey` is required, however since many endpoints of the API do not require authentication, `secret` and `sessionKey` are optional.
+First, you must instantiate the LastFm Class with arguments containing the details of your API account. `apiKey` is required, however since many endpoints of the API do not require authentication, `secret` and `sessionKey` are optional.
 
 ```js
 const LastFm = require("lastfm-node-client");
-const lastFm = new LastFm({
-    "apiKey": "API_KEY",
-    "secret": "SECRET",
-    "sessionKey": "SESSION_KEY"
-});
+
+const lastFm = new LastFm("API_KEY", "SECRET", "SESSION_KEY");
 ```
 
-### Making requests
+### Making Requests
 
 The Last.fm API is structured into packages and methods, accessed as `Package.method`. The LastFm Class contains directly corresponding methods for each package method, written as `lastFm.packageMethod()`. For example, endpoint `User.getRecentTracks` is accessed as `lastFm.userGetRecentTracks()`.
 
 ```js
-lastFm.userGetRecentTracks();
+lastFm.userGetRecentTracks({
+    user: "USER"
+});
 ```
 
 Parameters can be passed to the API through the `params` argument as an object that will be sent directly with the request, either as a query for a GET request, or a body for a POST request. The property names will not be transformed or abstracted, and so they must match the endpoint parameters exactly.
@@ -47,19 +46,19 @@ Parameters can be passed to the API through the `params` argument as an object t
 
 ```js
 lastFm.userGetRecentTracks({
-    "user": "USER"
+    user: "USER"
 });
 ```
 
-### Capturing responses
+### Capturing Responses and Handling Errors
 
-Every method returns a promise of the pending request by default. To access the response, you can chain `.then()` to the method, or use `await`.
+Every method returns a promise of the pending request by default. To access the response, you can chain `.then()` to the method, or use `await`. Errors thrown while making a request or [errors returned by the API](https://www.last.fm/api/errorcodes) will reject the promise.
 
 Chaining `.then()`:
 
 ```js
 lastFm.userGetRecentTracks({
-    "user": "USER"
+    user: "USER"
 })
 .then(data => {
     console.log(data);
@@ -70,19 +69,17 @@ Using `await`:
 
 ```js
 const data = await lastFm.userGetRecentTracks({
-    "user": "USER"
+    user: "USER"
 });
 
 console.log(data);
 ```
 
-An optional callback can be passed as the last argument. It is invoked with conventional `(err, data)` parameters; `err` being any exceptions thrown in the event of an error, `data` containing the JSON response of the API upon success.
-
-**Note**: "Success" in this context means a successful request, however the API may return an error response for a number of reasons detailed in their [error codes documentation](https://www.last.fm/api/errorcodes).
+An optional callback can be passed as the last argument. It is invoked with conventional `(err, data)` arguments; `err` being any errors thrown while making a request or [errors returned by the API](https://www.last.fm/api/errorcodes), `data` containing the JSON response of the API upon success.
 
 ```js
 lastFm.userGetRecentTracks({
-    "user": "USER"
+    user: "USER"
 },
 (err, data)) => {
     console.log(data);
@@ -91,7 +88,7 @@ lastFm.userGetRecentTracks({
 
 When callback is passed, methods do not return a `promise`, instead return the LastFm instance the method was called on. This allows you to chain requests.
 
-## Utility methods
+## Utility Methods
 
 These methods do not correspond to an exact API endpoint, but are abstractions of the already provided methods to provide easier usage.
 
@@ -102,16 +99,16 @@ This method takes an array of objects that match the `params` parameter accepted
 ```js
 lastFm.trackScrobbleMany([
     {
-        "artist": "ARTIST",
-        "album": "ALBUM",
-        "track": "TRACK",
-        "timestamp": "TIMESTAMP"
+        artist: "ARTIST",
+        album: "ALBUM",
+        track: "TRACK",
+        timestamp: "TIMESTAMP"
     },
     {
-        "artist": "ARTIST",
-        "album": "ALBUM",
-        "track": "TRACK",
-        "timestamp": "TIMESTAMP"
+        artist: "ARTIST",
+        album: "ALBUM",
+        track: "TRACK",
+        timestamp: "TIMESTAMP"
     }
 ]);
 ```
