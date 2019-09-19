@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "12"
+  - "8.10.0"
 
 after_success:
   - jest --coverage --coverageReporters=text-lcov | coveralls

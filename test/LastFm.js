@@ -13,68 +13,68 @@ jest.mock("../lib/ApiRequest", () => jest.fn().mockImplementation(() => ({
 	send: mockSend
 })));
 
-beforeEach(() => {
-	ApiRequest.mockClear();
-	mockSet.mockClear();
-	mockSign.mockClear();
-	mockSend.mockClear();
-});
+describe("lastFm()", () => {
+	beforeEach(() => {
+		ApiRequest.mockClear();
+		mockSet.mockClear();
+		mockSign.mockClear();
+		mockSend.mockClear();
+	});
 
-describe("LastFm()", () => {
 	describe("constructor()", () => {
-		test("set self apiKey property value of apiKey parameter", () => {
+		it("sets self apiKey property value of apiKey argument", () => {
 			const lastFm = new LastFm(apiKey);
 
 			expect(lastFm.apiKey).toBe(apiKey);
 		});
 
-		test("set self secret property value of secret parameter", () => {
+		it("sets self secret property value of secret argument", () => {
 			const lastFm = new LastFm(apiKey, secret);
 
 			expect(lastFm.secret).toBe(secret);
 		});
 
-		test("set self sessionKey property value of sessionKey parameter", () => {
+		it("sets self sessionKey property value of sessionKey argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			expect(lastFm.sessionKey).toBe(sessionKey);
 		});
 
-		test("throw TypeError if apiKey paramater is not passed", () => {
-			function throwsTypeError() {
+		it("throws TypeError if apiKey argument is not passed", () => {
+			const throwsTypeError = function() {
 				new LastFm();
-			}
+			};
 
 			expect(throwsTypeError).toThrow(TypeError);
 		});
 
-		test("throw TypeError if apiKey paramater is not of type string", () => {
-			function throwsTypeError() {
+		it("throws TypeError if apiKey argument is not of type string", () => {
+			const throwsTypeError = function() {
 				new LastFm(null);
-			}
+			};
 
 			expect(throwsTypeError).toThrow(TypeError);
 		});
 
-		test("throw TypeError if secret paramater is not of type string", () => {
-			function throwsTypeError() {
+		it("throws TypeError if secret argument is not of type string", () => {
+			const throwsTypeError = function() {
 				new LastFm(apiKey, null);
-			}
+			};
 
 			expect(throwsTypeError).toThrow(TypeError);
 		});
 
-		test("throw TypeError if sessionKey paramater is not of type string", () => {
-			function throwsTypeError() {
+		it("throws TypeError if sessionKey argument is not of type string", () => {
+			const throwsTypeError = function() {
 				new LastFm(apiKey, secret, null);
-			}
+			};
 
 			expect(throwsTypeError).toThrow(TypeError);
 		});
 	});
 
 	describe("albumAddTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumAddTags({});
@@ -82,7 +82,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumAddTags({});
@@ -90,7 +90,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -102,7 +102,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"album.addTags\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"album.addTags\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumAddTags({});
@@ -114,7 +114,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumAddTags({});
@@ -122,7 +122,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -131,7 +131,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -143,7 +143,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.albumAddTags({});
 
@@ -153,7 +153,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("albumGetInfo()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetInfo({});
@@ -161,7 +161,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetInfo({});
@@ -169,7 +169,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -181,7 +181,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getInfo\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getInfo\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetInfo({});
@@ -192,7 +192,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -201,7 +201,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -213,7 +213,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.albumGetInfo({});
 
@@ -223,7 +223,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("albumGetTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetTags({});
@@ -231,7 +231,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetTags({});
@@ -239,7 +239,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -251,7 +251,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetTags({});
@@ -262,7 +262,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -271,7 +271,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -283,7 +283,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.albumGetTags({});
 
@@ -293,7 +293,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("albumGetTopTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetTopTags({});
@@ -301,7 +301,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetTopTags({});
@@ -309,7 +309,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -321,7 +321,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getTopTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.getTopTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumGetTopTags({});
@@ -332,7 +332,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -341,7 +341,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -353,7 +353,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.albumGetTopTags({});
 
@@ -363,7 +363,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("albumRemoveTag()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumRemoveTag({});
@@ -371,7 +371,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumRemoveTag({});
@@ -379,7 +379,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -391,7 +391,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"album.removeTag\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"album.removeTag\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumRemoveTag({});
@@ -403,7 +403,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumRemoveTag({});
@@ -411,7 +411,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -420,7 +420,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -432,7 +432,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.albumRemoveTag({});
 
@@ -442,7 +442,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("albumSearch()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumSearch({});
@@ -450,7 +450,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumSearch({});
@@ -458,7 +458,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -470,7 +470,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.search\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"album.search\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.albumSearch({});
@@ -481,7 +481,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -490,7 +490,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -502,7 +502,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.albumSearch({});
 
@@ -512,7 +512,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistAddTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistAddTags({});
@@ -520,7 +520,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistAddTags({});
@@ -528,7 +528,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -540,7 +540,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"artist.addTags\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"artist.addTags\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistAddTags({});
@@ -552,7 +552,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistAddTags({});
@@ -560,7 +560,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -569,7 +569,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -581,7 +581,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistAddTags({});
 
@@ -591,7 +591,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistGetCorrection()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetCorrection({});
@@ -599,7 +599,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetCorrection({});
@@ -607,7 +607,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -619,7 +619,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getCorrection\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getCorrection\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetCorrection({});
@@ -630,7 +630,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -639,7 +639,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -651,7 +651,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistGetCorrection({});
 
@@ -661,7 +661,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistGetInfo()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetInfo({});
@@ -669,7 +669,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetInfo({});
@@ -677,7 +677,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -689,7 +689,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getInfo\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getInfo\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetInfo({});
@@ -700,7 +700,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -709,7 +709,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -721,7 +721,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistGetInfo({});
 
@@ -731,7 +731,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistGetSimilar()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetSimilar({});
@@ -739,7 +739,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetSimilar({});
@@ -747,7 +747,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -759,7 +759,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getSimilar\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getSimilar\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetSimilar({});
@@ -770,7 +770,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -779,7 +779,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -791,7 +791,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistGetSimilar({});
 
@@ -801,7 +801,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistGetTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTags({});
@@ -809,7 +809,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTags({});
@@ -817,7 +817,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -829,7 +829,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTags({});
@@ -840,7 +840,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -849,7 +849,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -861,7 +861,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistGetTags({});
 
@@ -871,7 +871,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistGetTopAlbums()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopAlbums({});
@@ -879,7 +879,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopAlbums({});
@@ -887,7 +887,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -899,7 +899,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopAlbums\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopAlbums\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopAlbums({});
@@ -910,7 +910,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -919,7 +919,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -931,7 +931,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistGetTopAlbums({});
 
@@ -941,7 +941,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistGetTopTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopTags({});
@@ -949,7 +949,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopTags({});
@@ -957,7 +957,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -969,7 +969,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopTags({});
@@ -980,7 +980,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -989,7 +989,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1001,7 +1001,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistGetTopTags({});
 
@@ -1011,7 +1011,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistGetTopTracks()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopTracks({});
@@ -1019,7 +1019,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopTracks({});
@@ -1027,7 +1027,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1039,7 +1039,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopTracks\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.getTopTracks\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistGetTopTracks({});
@@ -1050,7 +1050,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1059,7 +1059,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1071,7 +1071,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistGetTopTracks({});
 
@@ -1081,7 +1081,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistRemoveTag()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistRemoveTag({});
@@ -1089,7 +1089,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistRemoveTag({});
@@ -1097,7 +1097,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1109,7 +1109,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"artist.removeTag\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"artist.removeTag\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistRemoveTag({});
@@ -1121,7 +1121,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistRemoveTag({});
@@ -1129,7 +1129,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1138,7 +1138,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1150,7 +1150,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistRemoveTag({});
 
@@ -1160,7 +1160,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("artistSearch()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistSearch({});
@@ -1168,7 +1168,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistSearch({});
@@ -1176,7 +1176,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1188,7 +1188,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.search\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"artist.search\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.artistSearch({});
@@ -1199,7 +1199,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1208,7 +1208,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1220,7 +1220,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.artistSearch({});
 
@@ -1230,7 +1230,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("authGetMobileSession()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetMobileSession({});
@@ -1238,7 +1238,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetMobileSession({});
@@ -1246,7 +1246,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1258,7 +1258,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getMobileSession\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getMobileSession\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetMobileSession({});
@@ -1269,7 +1269,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetMobileSession({});
@@ -1277,7 +1277,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1286,7 +1286,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1298,7 +1298,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.authGetMobileSession({});
 
@@ -1308,7 +1308,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("authGetSession()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetSession({});
@@ -1316,7 +1316,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetSession({});
@@ -1324,7 +1324,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1336,7 +1336,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getSession\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getSession\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetSession({});
@@ -1347,7 +1347,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetSession({});
@@ -1355,7 +1355,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1364,7 +1364,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1376,7 +1376,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.authGetSession({});
 
@@ -1386,7 +1386,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("authGetToken()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetToken();
@@ -1394,7 +1394,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set(), passing object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getToken\" respectively", () => {
+		it("calls ApiRequest.set(), passing object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"auth.getToken\"", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetToken();
@@ -1405,7 +1405,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.authGetToken();
@@ -1413,7 +1413,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1422,7 +1422,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1434,7 +1434,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.authGetToken();
 
@@ -1444,7 +1444,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("chartGetTopArtists()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopArtists({});
@@ -1452,7 +1452,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopArtists({});
@@ -1460,7 +1460,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1472,7 +1472,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopArtists\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopArtists\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopArtists({});
@@ -1483,7 +1483,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1492,7 +1492,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1504,7 +1504,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.chartGetTopArtists({});
 
@@ -1514,7 +1514,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("chartGetTopTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopTags({});
@@ -1522,7 +1522,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopTags({});
@@ -1530,7 +1530,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1542,7 +1542,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopTags({});
@@ -1553,7 +1553,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1562,7 +1562,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1574,7 +1574,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.chartGetTopTags({});
 
@@ -1584,7 +1584,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("chartGetTopTracks()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopTracks({});
@@ -1592,7 +1592,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopTracks({});
@@ -1600,7 +1600,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1612,7 +1612,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopTracks\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"chart.getTopTracks\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.chartGetTopTracks({});
@@ -1623,7 +1623,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1632,7 +1632,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1644,7 +1644,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.chartGetTopTracks({});
 
@@ -1654,7 +1654,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("geoGetTopArtists()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.geoGetTopArtists({});
@@ -1662,7 +1662,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.geoGetTopArtists({});
@@ -1670,7 +1670,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1682,7 +1682,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"geo.getTopArtists\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"geo.getTopArtists\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.geoGetTopArtists({});
@@ -1693,7 +1693,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1702,7 +1702,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1714,7 +1714,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.geoGetTopArtists({});
 
@@ -1724,7 +1724,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("geoGetTopTracks()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.geoGetTopTracks({});
@@ -1732,7 +1732,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.geoGetTopTracks({});
@@ -1740,7 +1740,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1752,7 +1752,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"geo.getTopTracks\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"geo.getTopTracks\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.geoGetTopTracks({});
@@ -1763,7 +1763,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1772,7 +1772,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1784,7 +1784,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.geoGetTopTracks({});
 
@@ -1794,7 +1794,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("libraryGetArtists()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.libraryGetArtists({});
@@ -1802,7 +1802,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.libraryGetArtists({});
@@ -1810,7 +1810,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1822,7 +1822,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"library.getArtists\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"library.getArtists\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.libraryGetArtists({});
@@ -1833,7 +1833,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1842,7 +1842,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1854,7 +1854,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.libraryGetArtists({});
 
@@ -1864,7 +1864,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("tagGetInfo()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetInfo({});
@@ -1872,7 +1872,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetInfo({});
@@ -1880,7 +1880,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1892,7 +1892,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getInfo\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getInfo\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetInfo({});
@@ -1903,7 +1903,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1912,7 +1912,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1924,7 +1924,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.tagGetInfo({});
 
@@ -1934,7 +1934,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("tagGetSimilar()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetSimilar({});
@@ -1942,7 +1942,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetSimilar({});
@@ -1950,7 +1950,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -1962,7 +1962,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getSimilar\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getSimilar\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetSimilar({});
@@ -1973,7 +1973,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -1982,7 +1982,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -1994,7 +1994,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.tagGetSimilar({});
 
@@ -2004,7 +2004,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("tagGetTopAlbums()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopAlbums({});
@@ -2012,7 +2012,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopAlbums({});
@@ -2020,7 +2020,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2032,7 +2032,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopAlbums\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopAlbums\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopAlbums({});
@@ -2043,7 +2043,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2052,7 +2052,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2064,7 +2064,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.tagGetTopAlbums({});
 
@@ -2074,7 +2074,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("tagGetTopArtists()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopArtists({});
@@ -2082,7 +2082,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopArtists({});
@@ -2090,7 +2090,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2102,7 +2102,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopArtists\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopArtists\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopArtists({});
@@ -2113,7 +2113,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2122,7 +2122,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2134,7 +2134,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.tagGetTopArtists({});
 
@@ -2144,7 +2144,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("tagGetTopTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopTags({});
@@ -2152,7 +2152,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set(), passing object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopTags\" respectively", () => {
+		it("calls ApiRequest.set(), passing object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopTags\"", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopTags({});
@@ -2163,7 +2163,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2172,7 +2172,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2184,7 +2184,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.tagGetTopTags({});
 
@@ -2194,7 +2194,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("tagGetTopTracks()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopTracks({});
@@ -2202,7 +2202,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopTracks({});
@@ -2210,7 +2210,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2222,7 +2222,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopTracks\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getTopTracks\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetTopTracks({});
@@ -2233,7 +2233,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2242,7 +2242,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2254,7 +2254,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.tagGetTopTracks({});
 
@@ -2264,7 +2264,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("tagGetWeeklyChartList()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetWeeklyChartList({});
@@ -2272,7 +2272,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetWeeklyChartList({});
@@ -2280,7 +2280,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2292,7 +2292,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getWeeklyChartList\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"tag.getWeeklyChartList\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.tagGetWeeklyChartList({});
@@ -2303,7 +2303,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2312,7 +2312,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2324,7 +2324,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.tagGetWeeklyChartList({});
 
@@ -2334,7 +2334,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackAddTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackAddTags({});
@@ -2342,7 +2342,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackAddTags({});
@@ -2350,7 +2350,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2362,7 +2362,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.addTags\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.addTags\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackAddTags({});
@@ -2374,7 +2374,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackAddTags({});
@@ -2382,7 +2382,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2391,7 +2391,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2403,7 +2403,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackAddTags({});
 
@@ -2413,7 +2413,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackGetCorrection()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetCorrection({});
@@ -2421,7 +2421,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetCorrection({});
@@ -2429,7 +2429,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2441,7 +2441,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getCorrection\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getCorrection\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetCorrection({});
@@ -2452,7 +2452,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2461,7 +2461,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2473,7 +2473,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackGetCorrection({});
 
@@ -2483,7 +2483,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackGetInfo()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetInfo({});
@@ -2491,7 +2491,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetInfo({});
@@ -2499,7 +2499,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2511,7 +2511,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getInfo\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getInfo\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetInfo({});
@@ -2522,7 +2522,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2531,7 +2531,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2543,7 +2543,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackGetInfo({});
 
@@ -2553,7 +2553,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackGetSimilar()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetSimilar({});
@@ -2561,7 +2561,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetSimilar({});
@@ -2569,7 +2569,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2581,7 +2581,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getSimilar\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getSimilar\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetSimilar({});
@@ -2592,7 +2592,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2601,7 +2601,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2613,7 +2613,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackGetSimilar({});
 
@@ -2623,7 +2623,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackGetTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetTags({});
@@ -2631,7 +2631,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetTags({});
@@ -2639,7 +2639,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2651,7 +2651,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetTags({});
@@ -2662,7 +2662,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2671,7 +2671,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2683,7 +2683,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackGetTags({});
 
@@ -2693,7 +2693,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackGetTopTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetTopTags({});
@@ -2701,7 +2701,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetTopTags({});
@@ -2709,7 +2709,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2721,7 +2721,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getTopTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.getTopTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackGetTopTags({});
@@ -2732,7 +2732,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2741,7 +2741,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2753,7 +2753,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackGetTopTags({});
 
@@ -2763,7 +2763,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackLove()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackLove({});
@@ -2771,7 +2771,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackLove({});
@@ -2779,7 +2779,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2791,7 +2791,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.love\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.love\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackLove({});
@@ -2803,7 +2803,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackLove({});
@@ -2811,7 +2811,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2820,7 +2820,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2832,7 +2832,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackLove({});
 
@@ -2842,7 +2842,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackRemoveTag()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackRemoveTag({});
@@ -2850,7 +2850,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackRemoveTag({});
@@ -2858,7 +2858,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2870,7 +2870,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.removeTag\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.removeTag\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackRemoveTag({});
@@ -2882,7 +2882,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackRemoveTag({});
@@ -2890,7 +2890,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2899,7 +2899,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2911,7 +2911,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackRemoveTag({});
 
@@ -2921,7 +2921,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackScrobble()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackScrobble({});
@@ -2929,7 +2929,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackScrobble({});
@@ -2937,7 +2937,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -2949,7 +2949,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.scrobble\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.scrobble\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackScrobble({});
@@ -2961,7 +2961,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackScrobble({});
@@ -2969,7 +2969,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -2978,7 +2978,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -2990,7 +2990,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackScrobble({});
 
@@ -3000,7 +3000,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackScrobbleMany()", () => {
-		test("call LastFm.trackScrobble(), passing object as first paramater, which is the result of mapping the keys and values of the objects in the paramsArr argument, appending [<index>] to the key to note the index of the source object in the array", () => {
+		it("calls LastFm.trackScrobble(), passing object as first argument, which is the result of mapping the keys and values of the objects in the paramsArr argument, appending [<index>] to the key to note the index of the source object in the array", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const spyTrackScrobble = jest.spyOn(lastFm, "trackScrobble");
 			const paramsArr = [
@@ -3014,10 +3014,11 @@ describe("LastFm()", () => {
 				}
 			];
 
-			const params = Object.fromEntries(paramsArr.flatMap((paramsObj, i) => Object
+			const params = {};
+
+			paramsArr.forEach((paramsObj, i) => Object
 				.entries(paramsObj)
-				.map(([name, value]) => [`${name}[${i}]`, value])
-			));
+				.forEach(([name, value]) => params[`${name}[${i}]`] = value));
 
 			lastFm.trackScrobbleMany(paramsArr);
 
@@ -3026,7 +3027,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackSearch()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackSearch({});
@@ -3034,7 +3035,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackSearch({});
@@ -3042,7 +3043,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3054,7 +3055,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.search\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"track.search\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackSearch({});
@@ -3065,7 +3066,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3074,7 +3075,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3086,7 +3087,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackSearch({});
 
@@ -3096,7 +3097,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackUnlove()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUnlove({});
@@ -3104,7 +3105,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUnlove({});
@@ -3112,7 +3113,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3124,7 +3125,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.unlove\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.unlove\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUnlove({});
@@ -3136,7 +3137,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUnlove({});
@@ -3144,7 +3145,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3153,7 +3154,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3165,7 +3166,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackUnlove({});
 
@@ -3175,7 +3176,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("trackUpdateNowPlaying()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUpdateNowPlaying({});
@@ -3183,7 +3184,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUpdateNowPlaying({});
@@ -3191,7 +3192,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3203,7 +3204,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.updateNowPlaying\", and \"lastFn.sessionKey\" respectively", () => {
+		it("passes object with \"api_key\", \"method\", and \"sk\" properties set to \"lastFm.apiKey\", \"track.updateNowPlaying\", and \"lastFm.sessionKey\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUpdateNowPlaying({});
@@ -3215,7 +3216,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.trackUpdateNowPlaying({});
@@ -3223,7 +3224,7 @@ describe("LastFm()", () => {
 			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
 		});
 
-		test("call ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
+		it("calls ApiRequest.send(), passing \"POST\" as first argument, and callback argument as second argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3232,7 +3233,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3244,7 +3245,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.trackUpdateNowPlaying({});
 
@@ -3254,7 +3255,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetFriends()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetFriends({});
@@ -3262,7 +3263,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetFriends({});
@@ -3270,7 +3271,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3282,7 +3283,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getFriends\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getFriends\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetFriends({});
@@ -3293,7 +3294,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3302,7 +3303,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3314,7 +3315,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetFriends({});
 
@@ -3324,7 +3325,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetInfo()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetInfo({});
@@ -3332,7 +3333,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetInfo({});
@@ -3340,7 +3341,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3352,7 +3353,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getInfo\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getInfo\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetInfo({});
@@ -3363,7 +3364,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3372,7 +3373,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3384,7 +3385,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetInfo({});
 
@@ -3394,7 +3395,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetLovedTracks()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetLovedTracks({});
@@ -3402,7 +3403,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetLovedTracks({});
@@ -3410,7 +3411,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3422,7 +3423,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getLovedTracks\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getLovedTracks\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetLovedTracks({});
@@ -3433,7 +3434,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3442,7 +3443,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3454,7 +3455,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetLovedTracks({});
 
@@ -3464,7 +3465,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetPersonalTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetPersonalTags({});
@@ -3472,7 +3473,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetPersonalTags({});
@@ -3480,7 +3481,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3492,7 +3493,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getPersonalTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getPersonalTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetPersonalTags({});
@@ -3503,7 +3504,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3512,7 +3513,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3524,7 +3525,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetPersonalTags({});
 
@@ -3534,7 +3535,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetRecentTracks()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetRecentTracks({});
@@ -3542,7 +3543,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetRecentTracks({});
@@ -3550,7 +3551,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3562,7 +3563,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getRecentTracks\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getRecentTracks\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetRecentTracks({});
@@ -3573,7 +3574,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3582,7 +3583,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3594,7 +3595,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetRecentTracks({});
 
@@ -3604,7 +3605,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetTopAlbums()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopAlbums({});
@@ -3612,7 +3613,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopAlbums({});
@@ -3620,7 +3621,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3632,7 +3633,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopAlbums\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopAlbums\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopAlbums({});
@@ -3643,7 +3644,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3652,7 +3653,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3664,7 +3665,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetTopAlbums({});
 
@@ -3674,7 +3675,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetTopArtists()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopArtists({});
@@ -3682,7 +3683,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopArtists({});
@@ -3690,7 +3691,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3702,7 +3703,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopArtists\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopArtists\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopArtists({});
@@ -3713,7 +3714,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3722,7 +3723,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3734,7 +3735,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetTopArtists({});
 
@@ -3744,7 +3745,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetTopTags()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopTags({});
@@ -3752,7 +3753,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopTags({});
@@ -3760,7 +3761,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3772,7 +3773,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopTags\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopTags\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopTags({});
@@ -3783,7 +3784,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3792,7 +3793,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3804,7 +3805,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetTopTags({});
 
@@ -3814,7 +3815,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetTopTracks()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopTracks({});
@@ -3822,7 +3823,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopTracks({});
@@ -3830,7 +3831,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3842,7 +3843,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopTracks\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getTopTracks\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetTopTracks({});
@@ -3853,7 +3854,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3862,7 +3863,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3874,7 +3875,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetTopTracks({});
 
@@ -3884,7 +3885,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetWeeklyAlbumChart()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyAlbumChart({});
@@ -3892,7 +3893,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyAlbumChart({});
@@ -3900,7 +3901,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3912,7 +3913,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyAlbumChart\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyAlbumChart\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyAlbumChart({});
@@ -3923,7 +3924,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -3932,7 +3933,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -3944,7 +3945,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetWeeklyAlbumChart({});
 
@@ -3954,7 +3955,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetWeeklyArtistChart()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyArtistChart({});
@@ -3962,7 +3963,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyArtistChart({});
@@ -3970,7 +3971,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -3982,7 +3983,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyArtistChart\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyArtistChart\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyArtistChart({});
@@ -3993,7 +3994,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -4002,7 +4003,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -4014,7 +4015,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetWeeklyArtistChart({});
 
@@ -4024,7 +4025,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetWeeklyChartList()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyChartList({});
@@ -4032,7 +4033,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyChartList({});
@@ -4040,7 +4041,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -4052,7 +4053,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyChartList\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyChartList\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyChartList({});
@@ -4063,7 +4064,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -4072,7 +4073,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -4084,7 +4085,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetWeeklyChartList({});
 
@@ -4094,7 +4095,7 @@ describe("LastFm()", () => {
 	});
 
 	describe("userGetWeeklyTrackChart()", () => {
-		test("create a new ApiRequest instance", () => {
+		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyTrackChart({});
@@ -4102,7 +4103,7 @@ describe("LastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		test("call ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyTrackChart({});
@@ -4110,7 +4111,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
 
-		test("first call of ApiRequest.set() should pass params argument as first argument", () => {
+		it("passes params argument as first argument to first call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const params = {
 				foo: "bar",
@@ -4122,7 +4123,7 @@ describe("LastFm()", () => {
 			expect(mockSet).toHaveBeenNthCalledWith(1, params);
 		});
 
-		test("second call of ApiRequest.set() should pass object as first argument, with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyTrackChart\" respectively", () => {
+		it("passes object with \"api_key\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getWeeklyTrackChart\", as first argument to second call of ApiRequest.set()", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
 			lastFm.userGetWeeklyTrackChart({});
@@ -4133,7 +4134,7 @@ describe("LastFm()", () => {
 			});
 		});
 
-		test("call ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
@@ -4142,7 +4143,7 @@ describe("LastFm()", () => {
 			expect(mockSend).toHaveBeenCalledWith(callback);
 		});
 
-		test("return what ApiRequest.send() returns", () => {
+		it("returns what ApiRequest.send() returns", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const rA = {};
 
@@ -4154,7 +4155,7 @@ describe("LastFm()", () => {
 			expect(rB).toBe(rA);
 		});
 
-		test("return self if ApiRequest.send() returns undefined", () => {
+		it("returns self if ApiRequest.send() returns undefined", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const r = lastFm.userGetWeeklyTrackChart({});
 
