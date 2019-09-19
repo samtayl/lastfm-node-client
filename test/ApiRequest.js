@@ -32,7 +32,7 @@ describe("apiRequest", () => {
 	});
 
 	describe("sign()", () => {
-		it("sets self api_sig property to an md5 hash of all property names and values, excluding format and callback, ordered by `String.prototype.charCodeAt()` return value, and appended with a shared secret", () => {
+		it("sets `apiRequest.params` \"api_sig\" key to an md5 hash of all `apiRequest.params` keys and values, excluding format and callback, ordered by `String.prototype.charCodeAt()` return value, and appended with a shared secret", () => {
 			const apiRequest = new ApiRequest();
 			const params = {
 				aa: "aa",
@@ -71,7 +71,7 @@ describe("apiRequest", () => {
 
 			apiRequest.sign(secret);
 
-			expect(apiRequest.api_sig).toBe(apiSig);
+			expect(apiRequest.params.get("api_sig")).toBe(apiSig);
 		});
 	});
 
