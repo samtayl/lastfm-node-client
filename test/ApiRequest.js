@@ -4,45 +4,46 @@ const ApiRequest = require("../lib/ApiRequest");
 
 describe("apiRequest", () => {
 	describe("constructor()", () => {
-		it("defines `format` property as non configurable, non writable, enumerable, with value `json`", () => {
+		it("sets self `params` property to a `Map`", () => {
 			const apiRequest = new ApiRequest();
-			const descriptor = Object.getOwnPropertyDescriptor(apiRequest, "format");
 
-			expect(descriptor.configurable).toBe(false);
-			expect(descriptor.writable).toBe(false);
-			expect(descriptor.enumerable).toBe(true);
-			expect(descriptor.value).toBe("json");
+			expect(apiRequest.params).toBeInstanceOf(Map);
+		});
+
+		it("sets `apiRequest.params` \"format\" key to \"json\"", () => {
+			const apiRequest = new ApiRequest();
+
+			expect(apiRequest.params.get("format")).toBe("json");
 		});
 	});
 
 	describe("set()", () => {
-		it("sets self properties of object paramater", () => {
+		it("sets `apiRequest.params` keys and values of object argument", () => {
 			const apiRequest = new ApiRequest();
-			const props = {
+			const params = {
 				foo: "bar",
 				baz: "qux"
 			};
 
-			apiRequest.set(props);
+			apiRequest.set(params);
 
-			expect(apiRequest).toMatchObject(props);
+			expect(Array.from(apiRequest.params)).toStrictEqual(expect.arrayContaining(Object.entries(params)));
 		});
 	});
 
 	describe("sign()", () => {
 		it("sets self api_sig property to an md5 hash of all property names and values, excluding format and callback, ordered by `String.prototype.charCodeAt()` return value, and appended with a shared secret", () => {
 			const apiRequest = new ApiRequest();
-			const props = {
+			const params = {
 				aa: "aa",
 				a: "a",
 				aaa: "aaa"
 			};
 
-			apiRequest.set(props);
+			apiRequest.set(params);
 
-			const paramsStr = Object
-				.entries(apiRequest)
-				.filter(([name]) => name !== "format" && name !== "callback")
+			const paramsStr = Array.from(apiRequest.params)
+				.filter(([key]) => key !== "format" && key !== "callback")
 				.sort(([a], [b]) => {
 					for (let i = 0; i < a.length || i < b.length; i++) {
 						const charCodeA = a.charCodeAt(i) || 0;
