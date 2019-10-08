@@ -3394,6 +3394,65 @@ describe("lastFm()", () => {
 		});
 	});
 
+	describe("userGetInfoAuthenticated()", () => {
+		it("creates a new ApiRequest instance", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfoAuthenticated({});
+
+			expect(ApiRequest).toHaveBeenCalled();
+		});
+
+		it("passes object with \"api_key\", \"sk\" and \"method\" properties set to \"lastFm.apiKey\" and \"user.getInfo\", as first argument to second call of ApiRequest.set()", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfoAuthenticated({});
+
+			expect(mockSet.mock.calls[1][0]).toStrictEqual({
+				api_key: lastFm.apiKey,
+				method: "user.getInfo",
+				sk: lastFm.sessionKey
+			});
+		});
+
+		it("calls ApiRequest.sign(), passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfoAuthenticated({});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetInfoAuthenticated({}, callback);
+
+			expect(mockSend).toHaveBeenCalledWith(callback);
+		});
+
+		it("returns what ApiRequest.send() returns", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const rA = {};
+
+			mockSend.mockReturnValueOnce(rA);
+
+			const rB = lastFm.userGetInfoAuthenticated({});
+
+			expect(mockSend).toHaveReturnedWith(rA);
+			expect(rB).toBe(rA);
+		});
+
+		it("returns self if ApiRequest.send() returns undefined", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const r = lastFm.userGetInfoAuthenticated({});
+
+			expect(mockSend).toHaveReturnedWith(undefined);
+			expect(r).toBe(lastFm);
+		});
+	});
+
 	describe("userGetLovedTracks()", () => {
 		it("creates a new ApiRequest instance", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
