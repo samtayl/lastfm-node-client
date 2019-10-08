@@ -3333,10 +3333,10 @@ describe("lastFm()", () => {
 			expect(ApiRequest).toHaveBeenCalled();
 		});
 
-		it("calls ApiRequest.set() twice", () => {
+		it("calls ApiRequest.set() twice when params argument is passed and \"user\" property is set", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 
-			lastFm.userGetInfo({});
+			lastFm.userGetInfo({ user: "USER" });
 
 			expect(mockSet).toHaveBeenCalledTimes(2);
 		});
@@ -3364,13 +3364,63 @@ describe("lastFm()", () => {
 			});
 		});
 
-		it("calls ApiRequest.send(), passing callback argument as first argument", () => {
+		it("calls ApiRequest.set() a third time when called without arguments, passing object with \"sk\" property set to \"lastFm.sessionKey\"", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfo();
+
+			expect(mockSet.mock.calls[2][0]).toStrictEqual({ sk: lastFm.sessionKey });
+		});
+
+		it("calls ApiRequest.set() a third time when called with a function as first argument, passing object with \"sk\" property set to \"lastFm.sessionKey\"", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfo(() => {});
+
+			expect(mockSet.mock.calls[2][0]).toStrictEqual({ sk: lastFm.sessionKey });
+		});
+
+		it("calls ApiRequest.sign() when called without argument, passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfo();
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		it("calls ApiRequest.sign() when called with a function as first argument, passing \"lastFm.secret\" as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+
+			lastFm.userGetInfo(() => {});
+
+			expect(mockSign).toHaveBeenCalledWith(lastFm.secret);
+		});
+
+		it("calls ApiRequest.send(), passing \"GET\" as first argument and callback argument as second argument, when \"user\" is set in params argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetInfo({ user: "USER" }, callback);
+
+			expect(mockSend).toHaveBeenCalledWith("GET", callback);
+		});
+
+		it("calls ApiRequest.send(), passing \"POST\" as first argument and callback argument as second argument, when \"user\" is not set in params argument", () => {
 			const lastFm = new LastFm(apiKey, secret, sessionKey);
 			const callback = () => {};
 
 			lastFm.userGetInfo({}, callback);
 
-			expect(mockSend).toHaveBeenCalledWith(callback);
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
+		});
+
+		it("calls ApiRequest.send(), passing \"POST\" as first argument and callback argument as second argument, when callback is passed as first argument", () => {
+			const lastFm = new LastFm(apiKey, secret, sessionKey);
+			const callback = () => {};
+
+			lastFm.userGetInfo(callback);
+
+			expect(mockSend).toHaveBeenCalledWith("POST", callback);
 		});
 
 		it("returns what ApiRequest.send() returns", () => {

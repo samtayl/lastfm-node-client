@@ -34,21 +34,19 @@ const lastFm = new LastFm("API_KEY", "SECRET", "SESSION_KEY");
 
 The Last.fm API is structured into packages and methods, accessed as `Package.method`. The LastFm Class contains directly corresponding methods for each package method, written as `lastFm.packageMethod()`. For example, endpoint `User.getRecentTracks` is accessed as `lastFm.userGetRecentTracks()`.
 
-```js
-lastFm.userGetRecentTracks({
-    user: "USER"
-});
-```
-
 Parameters can be passed to the API through the `params` argument as an object that will be sent directly with the request, either as a query for a GET request, or a body for a POST request. The property names will not be transformed or abstracted, and so they must match the endpoint parameters exactly.
 
-**Note**: Endpoints `Auth.getToken` and `Tag.getTopTags` do not require additional parameters, as such, methods `lastFm.authGetToken()` and `lastFm.tagGetTopTags()` do not accept a `params` argument.
-
 ```js
 lastFm.userGetRecentTracks({
     user: "USER"
 });
 ```
+
+#### Notes
+
+* `lastFm.authGetToken()` and `lastFm.tagGetTopTags()` do not accept a `params` argument, as endpoints `Auth.getToken` and `Tag.getTopTags` do not require additional parameters.
+
+* `lastFm.userGetInfo()` params.user and params argument are optional and will default to the authenticated user in accordance with endpoint `User.getInfo`.
 
 ### Capturing Responses and Handling Errors
 
