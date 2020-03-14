@@ -78,7 +78,7 @@ describe("apiRequest", () => {
 	describe("send()", () => {
 		it("makes a GET request if \"POST\" is not passed as the first argument", () => {
 			const apiRequest = new ApiRequest();
-			const scope = nock("http://ws.audioscrobbler.com")
+			const scope = nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.reply(200, {});
@@ -90,7 +90,7 @@ describe("apiRequest", () => {
 
 		it("makes a POST request if \"POST\" is passed as the first argument", () => {
 			const apiRequest = new ApiRequest();
-			const scope = nock("http://ws.audioscrobbler.com")
+			const scope = nock("https://ws.audioscrobbler.com")
 				.post("/2.0", { format: "json" })
 				.reply(200, {});
 
@@ -103,7 +103,7 @@ describe("apiRequest", () => {
 			const apiRequest = new ApiRequest();
 			const reply = {};
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.reply(200, reply);
@@ -119,7 +119,7 @@ describe("apiRequest", () => {
 			const apiRequest = new ApiRequest();
 			const reply = {};
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.reply(200, reply);
@@ -135,7 +135,7 @@ describe("apiRequest", () => {
 			const apiRequest = new ApiRequest();
 			const reply = {};
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.reply(200, reply);
@@ -153,7 +153,7 @@ describe("apiRequest", () => {
 			const apiRequest = new ApiRequest();
 			const reply = {};
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.reply(200, reply);
@@ -171,7 +171,7 @@ describe("apiRequest", () => {
 			const apiRequest = new ApiRequest();
 			const reply = new Error();
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.replyWithError(reply);
@@ -182,7 +182,7 @@ describe("apiRequest", () => {
 		it("throws an error if the reply is not JSON", () => {
 			const apiRequest = new ApiRequest();
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.reply(200);
@@ -193,7 +193,7 @@ describe("apiRequest", () => {
 		it("throws an error if the reply contains error property", () => {
 			const apiRequest = new ApiRequest();
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.reply(200, { error: "You've met with a terrible fate, haven't you?" });
@@ -205,7 +205,7 @@ describe("apiRequest", () => {
 			const apiRequest = new ApiRequest();
 			const reply = new Error();
 
-			nock("http://ws.audioscrobbler.com")
+			nock("https://ws.audioscrobbler.com")
 				.get("/2.0")
 				.query({ format: "json" })
 				.replyWithError(reply);
