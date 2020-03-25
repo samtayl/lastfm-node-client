@@ -334,5 +334,8 @@
 				"no-new": "off"
 			}
 		}
+	],
+	"ignorePatterns": [
+		"index.d.ts"
 	]
 }
