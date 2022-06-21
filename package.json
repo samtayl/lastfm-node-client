@@ -33,5 +33,6 @@
   },
   "engines": {
     "node": ">=8.10.0"
-  }
+  },
+  "types": "index.d.ts"
 }
